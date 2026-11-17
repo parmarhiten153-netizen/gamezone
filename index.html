@@ -229,5 +229,16 @@ x.save();x.shadowBlur=24;x.shadowColor='#42eaff';x.fillStyle='#4cecff';x.beginPa
 })
 }
 
+// RESET HOMEPAGE WHEN THE PAGE IS RELOADED OR RESTORED
+if ('scrollRestoration' in history) history.scrollRestoration='manual';
+window.addEventListener('pageshow',()=>{
+  window.scrollTo(0,0);
+  search.value='';
+  category='All';
+  document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.cat==='All'));
+  clear();
+  modal.classList.remove('show');
+  render();
+});
 let tx=0;c.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});c.addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>15){keys[dx<0?'ArrowLeft':'ArrowRight']=true;setTimeout(()=>keys.ArrowLeft=keys.ArrowRight=false,120)}},{passive:true});
 </script></body></html>
