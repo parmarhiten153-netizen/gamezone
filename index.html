@@ -62,6 +62,39 @@ footer{padding:25px;background:#fff;border-top:1px solid #e8eaf0;color:#78808e;t
  .play{width:100%;padding:10px 8px}
  .box{padding:11px}
 }
+
+/* GAMEZONE HOME - Poki-inspired visual tile layout */
+:root{--bg:#62eadb;--panel:#fff;--muted:#65727a;--accent:#087fbd;--line:#d7f7f2}
+html{background:#62eadb}
+body{min-height:100vh;background:#62eadb;color:#102b3b;font-family:Arial,sans-serif;background-image:radial-gradient(ellipse at 18% 15%,#a4fff0 0,transparent 35%),radial-gradient(ellipse at 82% 22%,#30d8d2 0,transparent 38%),linear-gradient(135deg,#69f0df,#35d7d1 55%,#80f5e3)}
+header{position:sticky;top:12px;width:max-content;max-width:94%;margin:14px auto 24px;min-height:54px;padding:7px 18px;gap:18px;justify-content:center;border:1px solid #ffffffaa;border-radius:18px;background:#ffffffed;box-shadow:0 5px 20px #087e7a26}
+.logo{font-size:30px!important;letter-spacing:-1.8px!important}
+header input{width:210px;min-height:40px;background:#f5f8fb}
+main{width:min(1320px,97%);margin:0 auto 40px}
+.hero{display:none!important}
+.filters{position:relative;top:auto;justify-content:center;gap:12px;margin:0 auto 22px;padding:0;background:transparent}
+.filter{border:0;border-radius:22px;padding:10px 17px;background:#ffffffd9;color:#15384a;box-shadow:0 3px 10px #087e7a1a}
+.filter.active{background:#123a51;color:#fff}
+.games{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows: minmax(105px,9vw);gap:14px}
+.game{position:relative;min-width:0;min-height:0;border:0;border-radius:18px;background:#fff;box-shadow:0 5px 16px #064d4b30;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s}
+.game:hover{transform:translateY(-3px) scale(1.015);box-shadow:0 10px 22px #064d4b45}
+.art{height:100%;min-height:100%;font-size:clamp(38px,5vw,76px)!important;background:linear-gradient(135deg,#f9ca4e,#f27d62)!important}
+.game:nth-child(7n+2) .art{background:linear-gradient(135deg,#7be5e4,#3294d7)!important}
+.game:nth-child(7n+3) .art{background:linear-gradient(135deg,#ffd95a,#f4a43d)!important}
+.game:nth-child(7n+4) .art{background:linear-gradient(135deg,#b7e88a,#27b98d)!important}
+.game:nth-child(7n+5) .art{background:linear-gradient(135deg,#9aa9ff,#6654cf)!important}
+.game:nth-child(7n+6) .art{background:linear-gradient(135deg,#ffb4ce,#e45e8c)!important}
+.info{position:absolute;left:0;right:0;bottom:0;padding:22px 9px 9px;background:linear-gradient(transparent,#071c2be0);color:white}
+.info h3{margin:0;color:white;font-size:clamp(11px,1vw,14px);font-weight:900;text-shadow:0 1px 3px #0008}
+.info p,.tag,.play{display:none!important}
+.game:nth-child(12n+1){grid-column:span 2;grid-row:span 2}
+.game:nth-child(12n+5){grid-column:span 2;grid-row:span 2}
+.game:nth-child(12n+9){grid-column:span 2}
+.game:nth-child(12n+11){grid-row:span 2}
+footer{background:#ffffffb8;color:#315b62;border:0}
+@media(max-width:850px){.games{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:130px;gap:10px}.game:nth-child(12n+1),.game:nth-child(12n+5){grid-column:span 2;grid-row:span 2}}
+@media(max-width:560px){header{width:94%;max-width:none;justify-content:space-between;flex-wrap:wrap}header input{width:100%}.games{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:112px;gap:8px}.game:nth-child(12n+1),.game:nth-child(12n+5){grid-column:span 2;grid-row:span 2}.filters{justify-content:flex-start;overflow-x:auto}.filter{white-space:nowrap}}
+
 </style></head><body>
 <header><div class="logo">🎮 Game<span>Zone</span></div><input id="search" placeholder="Search games..."></header>
 <main><section class="hero"><h1>Find your next favourite game</h1><p>Instant fun starts here. Play free games on any device, no downloads needed.</p><div class="stats"><span class="pill">63 game modes</span><span class="pill">50 3D experiences</span><span class="pill">Keyboard + mobile controls</span></div></section>
@@ -136,7 +169,7 @@ const games=[
 ["3D City Drive","Racing","🚘","True 3D driving with traffic, a chase camera and touch controls.","drive3d"]
 ];
 const root=document.getElementById('games'),search=document.getElementById('search');let category='All';
-function render(){root.innerHTML='';games.forEach((g,i)=>{if((category!=='All'&&g[1]!==category)||!g[0].toLowerCase().includes(search.value.toLowerCase()))return;let el=document.createElement('article');el.className='game';el.innerHTML='<div class="art" style="background:linear-gradient(135deg,hsl('+(i*37%360)+' 72% 25%),hsl('+(i*37%360+65)+' 80% 52%),#111a38)!important">'+g[2]+'</div><div class="info"><h3>'+g[0]+' <span class="tag">PLAYABLE</span></h3><p>'+g[1]+' · '+g[3]+'</p><button class="play">Play now</button></div>';el.querySelector('button').onclick=()=>openGame(g[4],g[0]);root.appendChild(el)})}
+function render(){root.innerHTML='';games.forEach((g,i)=>{if((category!=='All'&&g[1]!==category)||!g[0].toLowerCase().includes(search.value.toLowerCase()))return;let el=document.createElement('article');el.className='game';el.innerHTML='<div class="art" style="background:linear-gradient(135deg,hsl('+(i*37%360)+' 72% 25%),hsl('+(i*37%360+65)+' 80% 52%),#111a38)!important">'+g[2]+'</div><div class="info"><h3>'+g[0]+' <span class="tag">PLAYABLE</span></h3><p>'+g[1]+' · '+g[3]+'</p><button class="play">Play now</button></div>';el.onclick=()=>openGame(g[4],g[0]);el.querySelector('button').onclick=(e)=>{e.stopPropagation();openGame(g[4],g[0])};root.appendChild(el)})}
 search.oninput=render;document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');category=b.dataset.cat;render()});render();
 const modal=document.getElementById('modal'),c=document.getElementById('board'),x=c.getContext('2d'),status=document.getElementById('gameStatus'),hint=document.getElementById('hint'),controls=document.getElementById('controls');let mode='',timer=0,raf=0,keys={},state={},last=0;
 function text(t){status.textContent=t}function clear(){cancelAnimationFrame(raf);clearInterval(timer);timer=0;raf=0;keys={};controls.innerHTML=''}
