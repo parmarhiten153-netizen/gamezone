@@ -63,7 +63,7 @@ main{width:min(1320px,94%);margin:30px auto 70px}
 .games{grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:20px}
 .game{border:1px solid #e9eaf1;border-radius:19px;box-shadow:0 5px 16px #2226420c;transition:transform .2s,box-shadow .2s,border-color .2s}
 .game:hover{transform:translateY(-6px);border-color:#c9c0ff;box-shadow:0 15px 30px #3924a51b}
-.art{height:158px;font-size:76px;transition:transform .2s}
+.art{height:158px;font-size:76px;transition:transform .2s;position:relative;isolation:isolate;background:linear-gradient(135deg,#111a38,#5636a8 55%,#06a8ad)!important}.art:before{content:' ';position:absolute;inset:0;z-index:-1;background:repeating-linear-gradient(120deg,transparent 0 18px,#ffffff12 19px 21px),radial-gradient(ellipse at 50% 110%,#ffffff40,transparent 55%)}.art:after{content:'3D • ULTRA';position:absolute;left:10px;top:10px;font:900 10px Arial;letter-spacing:1px;color:#fff;background:#090d20a8;border:1px solid #ffffff55;padding:6px 8px;border-radius:7px}
 .game:hover .art{filter:saturate(1.16)}
 .info{padding:15px 16px 17px}
 .info h3{font-size:17px;font-weight:900;letter-spacing:-.45px;margin-bottom:8px}
@@ -92,12 +92,63 @@ footer{padding:30px;background:#fff;color:#73798a;font-weight:600}
 
 </style></head><body>
 <header><div class="logo">🎮 Game<span>Zone</span></div><input id="search" placeholder="Search games..."></header>
-<main><section class="hero"><h1>Find your next favourite game</h1><p>Instant fun starts here. Play free games on any device, no downloads needed.</p><div class="stats"><span class="pill">10 playable games</span><span class="pill">Mobile friendly</span><span class="pill">More games coming</span></div></section>
+<main><section class="hero"><h1>Find your next favourite game</h1><p>Instant fun starts here. Play free games on any device, no downloads needed.</p><div class="stats"><span class="pill">63 game modes</span><span class="pill">50 3D experiences</span><span class="pill">Keyboard + mobile controls</span></div></section>
 <nav class="filters" id="filters"><button class="filter active" data-cat="All">All games</button><button class="filter" data-cat="Racing">Racing</button><button class="filter" data-cat="Arcade">Arcade</button><button class="filter" data-cat="Puzzle">Puzzle</button><button class="filter" data-cat="Action">Action</button></nav>
 <section class="games" id="games"></section></main><footer>© 2026 GameZone · Play fair, have fun.</footer>
 <div class="modal" id="modal"><div class="box"><div class="bar"><h2 id="gameTitle">Game</h2><button class="close" id="close">✕ Close</button></div><div class="bar"><span id="gameStatus" class="hint">Ready</span><button class="play" id="restart">↻ Restart</button></div><canvas id="board" class="board" width="480" height="360"></canvas><div class="controls" id="controls"></div><p id="hint" class="hint"></p></div></div>
 <script>
 const games=[
+["Neon City Racer","Racing","🏎️","Neon city highway racing","3d:drive:0"],
+["Supercar Highway","Racing","🚘","High-speed supercar traffic run","3d:drive:1"],
+["Extreme Drift City","Racing","🏁","Score points with controlled drifts","3d:drift:2"],
+["Mega City Parking","Racing","🅿️","Precision 3D parking challenges","3d:park:3"],
+["Offroad Mountain 4x4","Racing","🚙","Climb rough mountain trails","3d:offroad:4"],
+["Desert Rally X","Racing","🏜️","Race across desert tracks","3d:rally:5"],
+["Police Chase 3D","Racing","🚔","Escape the pursuit through traffic","3d:chase:6"],
+["Street Racer Pro","Racing","🏎️","Beat rivals on a city circuit","3d:race:7"],
+["Night Highway Rush","Racing","🌃","Night drive with glowing road lights","3d:drive:8"],
+["Formula Speed GP","Racing","🏆","Formula-style circuit racing","3d:race:9"],
+["Monster Truck Arena","Racing","🛻","Crush obstacles in a giant truck","3d:truck:10"],
+["Snow Mountain Drive","Racing","❄️","Drive across icy mountain roads","3d:offroad:11"],
+["Airport Runway Racer","Racing","✈️","Race beside airport runways","3d:race:12"],
+["Coastal Road Trip","Racing","🌊","Cruise a scenic coastal highway","3d:drive:13"],
+["Cargo Truck Driver","Driving","🚚","Deliver cargo without crashing","3d:truck:14"],
+["City Bus Driver 3D","Driving","🚌","Navigate a busy city route","3d:truck:15"],
+["Forklift Warehouse","Driving","🏗️","Move pallets around a 3D warehouse","3d:truck:16"],
+["Taxi Driver Simulator","Driving","🚕","Pick up and drop off passengers","3d:taxi:17"],
+["Stunt Car Mega Ramp","Racing","🎢","Launch across giant stunt ramps","3d:stunt:18"],
+["Car Crash Test Arena","Action","💥","Crash-test cars in an arena","3d:crash:19"],
+["Space Fighter 3D","Action","🚀","Blast enemy ships in deep space","3d:space:20"],
+["Galaxy Defender","Action","🌌","Defend the galaxy from waves","3d:space:21"],
+["Asteroid Blaster","Action","☄️","Dodge and destroy asteroids","3d:space:22"],
+["Moon Rover Explorer","Adventure","🌕","Explore a low-gravity moon","3d:rover:23"],
+["Mars Buggy Adventure","Adventure","🪐","Drive across the red planet","3d:rover:24"],
+["Cyber Runner 3D","Adventure","🏃","Run through a neon obstacle course","3d:runner:25"],
+["Temple Escape 3D","Adventure","🗿","Escape a collapsing ancient temple","3d:runner:26"],
+["Jungle Dash 3D","Adventure","🌴","Dodge obstacles in a jungle","3d:runner:27"],
+["Snowboard Mountain","Adventure","🏂","Race downhill through snow gates","3d:runner:28"],
+["Sky Platform Jump","Adventure","🪂","Jump between floating platforms","3d:platform:29"],
+["Ninja Rooftop Run","Adventure","🥷","Leap across city rooftops","3d:runner:30"],
+["Robot Battle Arena","Action","🤖","Fight waves of arena robots","3d:battle:31"],
+["Tank Battle 3D","Action","🛡️","Drive and battle in an arena","3d:tank:32"],
+["Mech Warrior Assault","Action","🦾","Control a giant combat mech","3d:battle:33"],
+["Dino Survival 3D","Adventure","🦖","Survive a dinosaur-filled island","3d:survival:34"],
+["Zombie Survival City","Adventure","🧟","Defend yourself in an abandoned city","3d:survival:35"],
+["Deep Sea Submarine","Adventure","🐠","Explore an underwater world","3d:sub:36"],
+["Shark Ocean Escape","Adventure","🦈","Navigate dangerous ocean waters","3d:sub:37"],
+["3D Soccer Arena","Sports","⚽","Score goals in a 3D arena","3d:ball:38"],
+["Basketball Street 3D","Sports","🏀","Shoot hoops on an outdoor court","3d:ball:39"],
+["Bowling Club 3D","Sports","🎳","Knock down all ten pins","3d:ball:40"],
+["Mini Golf Paradise","Sports","⛳","Put through creative 3D courses","3d:ball:41"],
+["Pool Master 3D","Sports","🎱","Pocket the balls on a 3D table","3d:ball:42"],
+["Castle Siege 3D","Action","🏰","Defend the castle from attackers","3d:battle:43"],
+["Pirate Ship Battle","Adventure","🏴‍☠️","Sail and battle on open seas","3d:ship:44"],
+["Jet Ski Ocean Race","Racing","🌊","Race across ocean waves","3d:ship:45"],
+["Motorbike Traffic X","Racing","🏍️","Weave through fast traffic","3d:bike:46"],
+["BMX Stunt Park","Sports","🚴","Ride ramps and perform tricks","3d:bike:47"],
+["Drift Kart Championship","Racing","🏎️","Kart racing with tight corners","3d:drift:48"],
+["Volcano Escape 3D","Adventure","🌋","Escape a rising river of lava","3d:runner:49"],
+
 ["Highway Racer","Racing","🏎️","Dodge traffic and survive the highway.","highway"],
 ["Snake Classic","Arcade","🐍","Eat the dots and grow without crashing.","snake"],
 ["Pong Duel","Arcade","🏓","Keep the ball in play. Beat the CPU.","pong"],
@@ -113,12 +164,12 @@ const games=[
 ["3D City Drive","Racing","🚘","True 3D driving with traffic, a chase camera and touch controls.","drive3d"]
 ];
 const root=document.getElementById('games'),search=document.getElementById('search');let category='All';
-function render(){root.innerHTML='';games.forEach((g,i)=>{if((category!=='All'&&g[1]!==category)||!g[0].toLowerCase().includes(search.value.toLowerCase()))return;let el=document.createElement('article');el.className='game';el.innerHTML='<div class="art">'+g[2]+'</div><div class="info"><h3>'+g[0]+' <span class="tag">PLAYABLE</span></h3><p>'+g[1]+' · '+g[3]+'</p><button class="play">Play now</button></div>';el.querySelector('button').onclick=()=>openGame(g[4],g[0]);root.appendChild(el)})}
+function render(){root.innerHTML='';games.forEach((g,i)=>{if((category!=='All'&&g[1]!==category)||!g[0].toLowerCase().includes(search.value.toLowerCase()))return;let el=document.createElement('article');el.className='game';el.innerHTML='<div class="art" style="background:linear-gradient(135deg,hsl('+(i*37%360)+' 72% 25%),hsl('+(i*37%360+65)+' 80% 52%),#111a38)!important">'+g[2]+'</div><div class="info"><h3>'+g[0]+' <span class="tag">PLAYABLE</span></h3><p>'+g[1]+' · '+g[3]+'</p><button class="play">Play now</button></div>';el.querySelector('button').onclick=()=>openGame(g[4],g[0]);root.appendChild(el)})}
 search.oninput=render;document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');category=b.dataset.cat;render()});render();
 const modal=document.getElementById('modal'),c=document.getElementById('board'),x=c.getContext('2d'),status=document.getElementById('gameStatus'),hint=document.getElementById('hint'),controls=document.getElementById('controls');let mode='',timer=0,raf=0,keys={},state={},last=0;
 function text(t){status.textContent=t}function clear(){cancelAnimationFrame(raf);clearInterval(timer);timer=0;raf=0;keys={};controls.innerHTML=''}
 function btn(label,fn){let b=document.createElement('button');b.textContent=label;b.onclick=fn;controls.appendChild(b)}
-function openGame(m,title){if(m==='drive3d'){window.location.href='./3d-city-drive.html?v=3';return}clear();mode=m;document.getElementById('gameTitle').textContent=title;modal.classList.add('show');document.getElementById('restart').onclick=()=>openGame(mode,title);setup()}
+function openGame(m,title){if(m==='drive3d'){window.location.href='./3d-city-drive.html';return} if(m.startsWith('3d:')){window.location.href='./3d-arcade.html?game='+encodeURIComponent(m);return}clear();mode=m;document.getElementById('gameTitle').textContent=title;modal.classList.add('show');document.getElementById('restart').onclick=()=>openGame(mode,title);setup()}
 document.getElementById('close').onclick=()=>{clear();modal.classList.remove('show')};
 document.addEventListener('keydown',e=>{keys[e.key]=true;if(mode==='ttt')return;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});document.addEventListener('keyup',e=>keys[e.key]=false);
 function loop(fn){last=performance.now();function frame(t){let dt=Math.min((t-last)/16.67,2);last=t;fn(dt);raf=requestAnimationFrame(frame)}raf=requestAnimationFrame(frame)}
