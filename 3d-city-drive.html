@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameZone | 3D City Drive</title><style>
 *{box-sizing:border-box}body{margin:0;background:#090e1d;color:#fff;font:15px Arial,sans-serif}header{display:flex;align-items:center;justify-content:space-between;padding:12px 4%;background:#171d32}a,button{color:#fff;background:#5b45e0;border:0;border-radius:10px;padding:11px 16px;text-decoration:none;font-weight:800;cursor:pointer}main{max-width:1100px;margin:18px auto;padding:0 14px}.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}#game{height:min(68vh,650px);min-height:330px;border-radius:16px;overflow:hidden;background:#78b9e8;margin-top:14px}#game canvas{display:block;width:100%;height:100%;touch-action:none}.controls{display:flex;justify-content:center;gap:12px;margin:14px;flex-wrap:wrap}.controls button{min-width:68px;font-size:18px;touch-action:none}.help{text-align:center;color:#bfc8e2;font-size:13px}
-</style><script src="./three.min.js"></script></head><body>
+</style><script src="./three.min.js?v=3"></script></head><body>
 <header><strong>🎮 GAMEZONE · 3D CITY DRIVE</strong><a href="./index.html">← Back to games</a></header><main><div class="top"><h2>3D City Drive</h2><strong id="status">Loading 3D world...</strong><button onclick="location.reload()">↻ Restart</button></div><div id="game"></div><div class="controls"><button data-key="ArrowLeft">◀</button><button data-key="ArrowUp">▲</button><button data-key="ArrowDown">▼</button><button data-key="ArrowRight">▶</button></div><p class="help">Keyboard: ← → steer, ↑ accelerate, ↓ brake. Mobile: hold the buttons. Avoid traffic!</p></main>
 <script>
 (()=>{
