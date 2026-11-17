@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GameZone - Free Online Games</title>
+<style>
+:root{--bg:#101322;--panel:#1b2034;--text:#f7f8ff;--muted:#aab1c8;--accent:#8b6cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;gap:15px;background:#171b2c;position:sticky;top:0}
+.logo{font-size:25px;font-weight:800}.logo span{color:#9d83ff}.search{width:min(340px,55vw);padding:12px;border-radius:10px;border:1px solid #343b57;background:#101526;color:white}
+main{width:min(1180px,92%);margin:28px auto 55px}.hero{padding:30px;border-radius:20px;background:linear-gradient(120deg,#4934a8,#202d61 70%,#176a80)}
+.hero h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}.hero p{margin:0;color:#e0e3ff}
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0}.filter,.play{padding:10px 15px;border-radius:10px;border:1px solid #343b57;background:#1b2034;color:white;cursor:pointer}.filter.active,.play{background:var(--accent);border-color:var(--accent)}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:17px}.game{background:var(--panel);border:1px solid #2b3149;border-radius:16px;overflow:hidden}.art{height:135px;display:grid;place-items:center;font-size:58px;background:linear-gradient(135deg,#304c83,#6d4bb2)}.game:nth-child(2) .art{background:linear-gradient(135deg,#087e83,#40b78d)}.game:nth-child(3) .art{background:linear-gradient(135deg,#a34d40,#e99b46)}.game:nth-child(4) .art{background:linear-gradient(135deg,#3c568c,#55a4cf)}
+.game-info{padding:14px}.game-info h3{margin:0 0 7px}.game-info p{color:var(--muted);font-size:13px;margin:0 0 13px}
+footer{text-align:center;color:var(--muted);padding:25px;border-top:1px solid #282e43}
+.modal{position:fixed;inset:0;background:#070a13ed;z-index:5;display:none;place-items:center;padding:14px}.modal.show{display:grid}.gamebox{width:min(520px,100%);background:#1b2034;padding:18px;border-radius:18px;text-align:center}.gamebox h2{margin:4px 0 8px}.stats{display:flex;justify-content:space-around;margin:10px 0;color:#dce0f5}
+canvas{width:100%;max-width:420px;height:auto;background:#252b3a;border-radius:12px;display:block;margin:10px auto;touch-action:none}
+.controls{display:flex;justify-content:center;gap:22px;margin:10px}.controls button,.close{font-size:18px;padding:11px 23px;border:0;border-radius:10px;background:#8b6cff;color:white;cursor:pointer}.close{background:#424960;font-size:14px}
+.help{font-size:12px;color:#aab1c8;line-height:1.5}
+@media(max-width:600px){header{flex-direction:column;align-items:stretch}.search{width:100%}.hero{padding:24px}}
+</style></head>
+<body>
+<header><div class="logo">🎮 Game<span>Zone</span></div><input id="search" class="search" placeholder="Search games..."></header>
+<main>
+<section class="hero"><h1>Play. Have fun. Repeat.</h1><p>Free browser games. No downloads needed.</p></section>
+<nav class="filters">
+<button class="filter active" data-cat="All">All games</button><button class="filter" data-cat="Racing">Racing</button><button class="filter" data-cat="Puzzle">Puzzle</button><button class="filter" data-cat="Action">Action</button>
+</nav>
+<section class="games" id="games">
+<article class="game" data-name="Highway Racer" data-cat="Racing"><div class="art">🏎️</div><div class="game-info"><h3>Highway Racer</h3><p>Racing · Avoid traffic and beat your score</p><button class="play" id="startGame">Play now</button></div></article>
+<article class="game" data-name="Tap Challenge" data-cat="Action"><div class="art">⚡</div><div class="game-info"><h3>Tap Challenge</h3><p>Action · Coming soon</p><button class="play" onclick="alert('More games are coming soon!')">Coming soon</button></div></article>
+<article class="game" data-name="Block Puzzle" data-cat="Puzzle"><div class="art">🧩</div><div class="game-info"><h3>Block Puzzle</h3><p>Puzzle · Coming soon</p><button class="play" onclick="alert('More games are coming soon!')">Coming soon</button></div></article>
+<article class="game" data-name="Space Adventure" data-cat="Action"><div class="art">🚀</div><div class="game-info"><h3>Space Adventure</h3><p>Action · Coming soon</p><button class="play" onclick="alert('More games are coming soon!')">Coming soon</button></div></article>
+</section></main>
+<footer>© 2026 GameZone · Made for fun</footer>
+<div class="modal" id="modal"><div class="gamebox">
+<h2>🏁 Highway Racer</h2><div class="stats"><span>Score: <b id="score">0</b></span><span>Best: <b id="best">0</b></span></div>
+<div class="canvas-wrap" style="position:relative;width:min(420px,100%);margin:10px auto"><canvas id="board" width="360" height="500" style="margin:0"></canvas><div id="gameOverOverlay" style="display:none;position:absolute;inset:0;background:#080b16cc;border-radius:12px;align-items:center;justify-content:center;flex-direction:column;gap:12px"><h2 style="margin:0">💥 Game Over!</h2><p style="margin:0">Your car crashed.</p><button id="overlayRestart" style="font-size:17px;padding:12px 24px;border:0;border-radius:10px;background:#8b6cff;color:white;font-weight:bold;cursor:pointer">↻ Restart Game</button></div></div>
+<div class="controls"><button id="left">⬅️</button><button id="right">➡️</button></div>
+<p class="help">Computer: use ← → arrow keys. Mobile: use the buttons or swipe on the road.</p>
+<button class="play" id="restart">Restart</button> <button class="close" id="close">Close</button>
+<p id="message" class="help">Avoid the other cars. Good luck!</p>
+</div></div>
+<script>
+const search=document.getElementById('search'),cards=[...document.querySelectorAll('.game')];let cat='All';
+function filter(){let q=search.value.toLowerCase();cards.forEach(c=>c.style.display=(c.dataset.name.toLowerCase().includes(q)&&(cat==='All'||c.dataset.cat===cat))?'':'none')}
+search.addEventListener('input',filter);
+document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');cat=b.dataset.cat;filter()}));
+
+const modal=document.getElementById('modal'),canvas=document.getElementById('board'),ctx=canvas.getContext('2d');
+const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),message=document.getElementById('message');
+let player={x:158,y:410,w:44,h:68},traffic=[],score=0,best=Number(localStorage.getItem('gzBest')||0),running=false,raf=0,last=0,spawn=0,speed=3.2,keys={};
+bestEl.textContent=best;
+function car(x,y,color){ctx.fillStyle=color;ctx.fillRect(x+7,y,30,68);ctx.fillStyle='#dcecff';ctx.fillRect(x+12,y+9,20,15);ctx.fillRect(x+12,y+43,20,13);ctx.fillStyle='#111';ctx.fillRect(x+2,y+10,6,17);ctx.fillRect(x+36,y+10,6,17);ctx.fillRect(x+2,y+43,6,17);ctx.fillRect(x+36,y+43,6,17)}
+function draw(){
+ ctx.fillStyle='#303744';ctx.fillRect(0,0,360,500);ctx.fillStyle='#5d6570';ctx.fillRect(35,0,290,500);
+ ctx.fillStyle='#f6f1d5';for(let y=-30;y<530;y+=90){ctx.fillRect(176,y,8,48)}
+ ctx.fillStyle='#75a65a';ctx.fillRect(0,0,35,500);ctx.fillRect(325,0,35,500);
+ car(player.x,player.y,'#8b6cff');traffic.forEach(t=>car(t.x,t.y,'#e35d6a'));
+}
+function endGame(){running=false;cancelAnimationFrame(raf);message.textContent='Game over! Your score: '+score+'. Tap Restart Game to play again.';document.getElementById('gameOverOverlay').style.display='flex';if(score>best){best=score;localStorage.setItem('gzBest',best);bestEl.textContent=best}}
+function loop(ts){if(!running)return;let dt=Math.min((ts-last)/16.67||1,2);last=ts;
+ if(keys.ArrowLeft||keys.left)player.x-=5*dt;if(keys.ArrowRight||keys.right)player.x+=5*dt;player.x=Math.max(42,Math.min(274,player.x));
+ spawn+=dt;if(spawn>Math.max(25,68-score/4)){spawn=0;let lanes=[55,120,190,260];let x=lanes[Math.floor(Math.random()*lanes.length)];traffic.push({x,y:-75})}
+ traffic.forEach(t=>t.y+=speed*dt);traffic=traffic.filter(t=>t.y<530);
+ for(const t of traffic){if(player.x<t.x+42&&player.x+44>t.x&&player.y<t.y+68&&player.y+68>t.y){endGame();draw();return}}
+ score+=Math.floor(dt);scoreEl.textContent=score;speed=3.2+Math.min(score/120,3);draw();raf=requestAnimationFrame(loop)}
+function start(){cancelAnimationFrame(raf);document.getElementById('gameOverOverlay').style.display='none';player.x=158;traffic=[];score=0;speed=3.2;spawn=0;scoreEl.textContent='0';message.textContent='Avoid the other cars. Good luck!';running=true;last=performance.now();draw();raf=requestAnimationFrame(loop)}
+document.getElementById('startGame').onclick=()=>{modal.classList.add('show');start()};
+document.getElementById('restart').onclick=start;document.getElementById('overlayRestart').onclick=start;
+document.getElementById('close').onclick=()=>{running=false;cancelAnimationFrame(raf);modal.classList.remove('show')};
+document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){keys[e.key]=true;e.preventDefault()}});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+function hold(id,key){let el=document.getElementById(id);el.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true});['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,()=>keys[key]=false))}
+hold('left','left');hold('right','right');
+let touchX=null;canvas.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX},{passive:true});
+canvas.addEventListener('touchmove',e=>{if(touchX===null)return;let now=e.touches[0].clientX;player.x+=(now-touchX)*0.9;player.x=Math.max(42,Math.min(274,player.x));touchX=now},{passive:true});
+canvas.addEventListener('touchend',()=>touchX=null);
+draw();
+</script></body></html>
