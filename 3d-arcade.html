@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameZone 3D Arcade</title><script src="./three.min.js"></script><style>
+*{box-sizing:border-box}body{margin:0;background:#070b18;color:#fff;font:15px system-ui,Arial}header{padding:13px 4%;display:flex;justify-content:space-between;align-items:center;background:#121a30}a,button{border:0;border-radius:10px;padding:11px 15px;background:#6548ef;color:#fff;text-decoration:none;font-weight:800;cursor:pointer}main{max-width:1150px;margin:16px auto;padding:0 12px}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}h2{margin:10px 0}#world{height:min(70vh,650px);min-height:360px;border-radius:18px;overflow:hidden;background:linear-gradient(#64b6e9,#b5d9f0);box-shadow:0 15px 50px #0008;border:1px solid #34436b}canvas{display:block;width:100%;height:100%;touch-action:none}.help{text-align:center;color:#b8c3df}.pad{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:13px}.pad button{min-width:62px;font-size:18px;touch-action:none}.badge{color:#a99bff;font-size:12px;font-weight:900;letter-spacing:1px}
+</style></head><body><header><b>🎮 GAMEZONE · 3D ARCADE</b><a href="./index.html">← All Games</a></header><main><div class="top"><div><div class="badge">REAL-TIME 3D GAMEPLAY</div><h2 id="title">Loading...</h2></div><div><b id="score">SCORE 0</b> &nbsp; <button onclick="location.reload()">↻ Restart</button></div></div><div id="world"></div><div class="pad"><button data-k="ArrowLeft">◀</button><button data-k="ArrowUp">▲</button><button data-k="Space">●</button><button data-k="ArrowDown">▼</button><button data-k="ArrowRight">▶</button></div><p class="help" id="help">Arrow keys / WASD to move. Mobile: hold the controls.</p></main>
+<script>
+(function(){
+var p=new URLSearchParams(location.search),code=p.get('game')||'3d:drive:0',parts=code.split(':'),type=parts[1]||'drive',num=+(parts[2]||0);
+var names=['Neon City Racer','Supercar Highway','Extreme Drift City','Mega City Parking','Offroad Mountain 4x4','Desert Rally X','Police Chase 3D','Street Racer Pro','Night Highway Rush','Formula Speed GP','Monster Truck Arena','Snow Mountain Drive','Airport Runway Racer','Coastal Road Trip','Cargo Truck Driver','City Bus Driver 3D','Forklift Warehouse','Taxi Driver Simulator','Stunt Car Mega Ramp','Car Crash Test Arena','Space Fighter 3D','Galaxy Defender','Asteroid Blaster','Moon Rover Explorer','Mars Buggy Adventure','Cyber Runner 3D','Temple Escape 3D','Jungle Dash 3D','Snowboard Mountain','Sky Platform Jump','Ninja Rooftop Run','Robot Battle Arena','Tank Battle 3D','Mech Warrior Assault','Dino Survival 3D','Zombie Survival City','Deep Sea Submarine','Shark Ocean Escape','3D Soccer Arena','Basketball Street 3D','Bowling Club 3D','Mini Golf Paradise','Pool Master 3D','Castle Siege 3D','Pirate Ship Battle','Jet Ski Ocean Race','Motorbike Traffic X','BMX Stunt Park','Drift Kart Championship','Volcano Escape 3D'];
+document.getElementById('title').textContent=names[num]||'3D Challenge';
+var host=document.getElementById('world'),scoreEl=document.getElementById('score'),help=document.getElementById('help');
+if(!window.THREE){help.textContent='3D engine failed to load. Refresh once or check connection.';return}
+var T=THREE,scene=new T.Scene();scene.background=new T.Color(type==='space'?0x05091d:type==='sub'?0x087e9b:0x86c9f0);scene.fog=new T.Fog(scene.background,45,170);
+var camera=new T.PerspectiveCamera(62,1,.1,260),renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;host.appendChild(renderer.domElement);
+function resize(){var w=host.clientWidth,h=host.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}new ResizeObserver(resize).observe(host);resize();
+scene.add(new T.HemisphereLight(0xd9f3ff,0x47516b,2.1));var sun=new T.DirectionalLight(0xfff2d6,2.3);sun.position.set(-20,35,18);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+function mat(c,r,m){return new T.MeshStandardMaterial({color:c,roughness:r===undefined?.75:r,metalness:m||0})}
+var ground=new T.Mesh(new T.PlaneGeometry(240,260),mat(type==='space'?0x171d3d:type==='sub'?0x086b83:0x43834a));ground.rotation.x=-Math.PI/2;ground.position.z=-90;ground.receiveShadow=true;scene.add(ground);
+var road=new T.Mesh(new T.PlaneGeometry(type==='park'?30:15,260),mat(type==='space'?0x11172d:0x303642));road.rotation.x=-Math.PI/2;road.position.y=.015;road.position.z=-90;scene.add(road);
+for(var xx of [-7.4,7.4]){var line=new T.Mesh(new T.BoxGeometry(.16,.035,260),mat(0xf9f4da));line.position.set(xx,.04,-90);scene.add(line)}
+for(var z=-220;z<20;z+=9){var dash=new T.Mesh(new T.BoxGeometry(.14,.04,4),mat(0xffffff));dash.position.set(0,.045,z);scene.add(dash)}
+var player=new T.Group();scene.add(player);
+var body=new T.Mesh(new T.BoxGeometry(type==='truck'?2.2:1.65,.65,type==='truck'?4.2:3.1),mat(type==='space'?0x39dfff:type==='runner'?0xffb13b:0x6b4cff,.3,.35));body.position.y=.75;body.castShadow=true;player.add(body);
+var cabin=new T.Mesh(new T.BoxGeometry(1.2,.65,1.45),mat(0x9deaff,.2,.25));cabin.position.set(0,1.35,-.15);player.add(cabin);
+for(var wx of [-.88,.88])for(var wz of [-1,1]){var wheel=new T.Mesh(new T.CylinderGeometry(.3,.3,.18,16),mat(0x10141c));wheel.rotation.z=Math.PI/2;wheel.position.set(wx,.35,wz);player.add(wheel)}
+if(type==='space'||type==='rover'){body.geometry=new T.ConeGeometry(1,2.6,7);body.rotation.x=-Math.PI/2;body.position.set(0,1,-.3)}
+if(type==='runner'||type==='platform'){body.geometry=new T.CapsuleGeometry(.42,.8,5,8);body.position.y=1.1}
+var obstacles=[],scenery=[];
+function spawn(){var x=(Math.random()-.5)*10,z=-150-Math.random()*55;var geo=type==='space'?new T.IcosahedronGeometry(1+Math.random()*1.3,1):new T.BoxGeometry(1.5,1.5,1.5);var ob=new T.Mesh(geo,mat(type==='space'?0xff5b91:[0xff584d,0xffc64b,0x32c5ad,0xdddff4][Math.floor(Math.random()*4)],.35,.25));ob.position.set(x,.8,z);ob.castShadow=true;scene.add(ob);obstacles.push(ob)}
+for(var i=0;i<42;i++){var zz=-i*6-8;for(var side of [-1,1]){var trunk=new T.Mesh(new T.CylinderGeometry(.14,.2,1.4,7),mat(0x79513a)),leaf=new T.Mesh(new T.ConeGeometry(1.15,2.8,7),mat(i%2?0x287a49:0x3a9953));trunk.position.set(side*(10+Math.random()*5),.7,zz);leaf.position.set(trunk.position.x,2,zz);scene.add(trunk,leaf);scenery.push(trunk,leaf)}}
+var keys={};addEventListener('keydown',function(e){keys[e.code]=true;keys[e.key]=true;if(e.code.indexOf('Arrow')===0||e.code==='Space')e.preventDefault()});addEventListener('keyup',function(e){keys[e.code]=false;keys[e.key]=false});
+document.querySelectorAll('[data-k]').forEach(function(b){var k=b.dataset.k;b.onpointerdown=function(e){e.preventDefault();keys[k]=true;b.setPointerCapture(e.pointerId)};['pointerup','pointercancel','lostpointercapture'].forEach(function(ev){b.addEventListener(ev,function(){keys[k]=false})})});
+var px=0,speed=0,score=0,last=performance.now(),clock=0,ended=false,jump=0;
+help.textContent=type==='space'?'Steer and blast through the asteroid field. Arrow keys move, Space fires.':'Steer with arrows or A/D. Up accelerates, down brakes. Avoid obstacles!';
+function frame(now){requestAnimationFrame(frame);var dt=Math.min((now-last)/16.67,2);last=now;if(!ended){
+var left=keys.ArrowLeft||keys.KeyA,right=keys.ArrowRight||keys.KeyD,up=keys.ArrowUp||keys.KeyW,down=keys.ArrowDown||keys.KeyS;
+var target=up?1.8:down?.25:1;speed+=(target-speed)*.025*dt;px+=(left?-1:0)+(right?1:0);px=Math.max(-5.5,Math.min(5.5,px));player.position.x+=(px-player.position.x)*.15*dt;
+if(type==='runner'||type==='platform'){if((keys.Space||keys.ArrowUp)&&jump<=0)jump=17;jump=Math.max(0,jump-dt);player.position.y=jump>0?Math.sin((17-jump)/17*Math.PI)*2:0}
+var travel=(.35+speed*.8)*dt;obstacles.forEach(function(o){o.position.z+=travel*(1+speed*.4);o.rotation.x+=.012*dt;o.rotation.y+=.018*dt});scenery.forEach(function(o){o.position.z+=travel*.7;if(o.position.z>16)o.position.z-=260});
+if(type==='space'&&(keys.Space||keys.KeyF)){if(!window.cool||now-window.cool>220){window.cool=now;var shot=new T.Mesh(new T.SphereGeometry(.18,8,8),mat(0x64f5ff,.2,.5));shot.position.set(player.position.x,1,-4);scene.add(shot)}}
+obstacles.forEach(function(o){if(o.position.z>3&&o.position.z<8&&Math.abs(o.position.x-player.position.x)<1.5)ended=true});
+obstacles.forEach(function(o){if(o.position.z>18){o.position.z=-160-Math.random()*55;o.position.x=(Math.random()-.5)*10;score+=10}});
+clock+=dt;if(clock>Math.max(24,58-speed*10)){clock=0;spawn()}score+=Math.floor(travel*.06);scoreEl.textContent='SCORE '+score+' · SPEED '+Math.round(speed*75)+' km/h';
+if(ended)help.textContent='CRASH / HIT! Press Restart to play again.'}
+camera.position.lerp(new T.Vector3(player.position.x*.3,6.2,14),.08);camera.lookAt(player.position.x*.35,1,-13);renderer.render(scene,camera)}
+for(var n=0;n<6;n++)spawn();requestAnimationFrame(frame);
+})();
+</script></body></html>
