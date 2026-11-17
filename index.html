@@ -109,7 +109,8 @@ const games=[
 ["Memory Match","Puzzle","🧠","Find all matching pairs.","memory"],
 ["Tic Tac Toe","Puzzle","❎","Get three in a row against the computer.","ttt"],
 ["Neon Drift Racer","Racing","🏁","Neon highway racing with glowing traffic and effects.","neon"],
-["Galaxy Assault","Action","🌌","Defend the galaxy with laser shots and particle effects.","galaxy"]
+["Galaxy Assault","Action","🌌","Defend the galaxy with laser shots and particle effects.","galaxy"],
+["3D City Drive","Racing","🚘","True 3D driving with traffic, a chase camera and touch controls.","drive3d"]
 ];
 const root=document.getElementById('games'),search=document.getElementById('search');let category='All';
 function render(){root.innerHTML='';games.forEach((g,i)=>{if((category!=='All'&&g[1]!==category)||!g[0].toLowerCase().includes(search.value.toLowerCase()))return;let el=document.createElement('article');el.className='game';el.innerHTML='<div class="art">'+g[2]+'</div><div class="info"><h3>'+g[0]+' <span class="tag">PLAYABLE</span></h3><p>'+g[1]+' · '+g[3]+'</p><button class="play">Play now</button></div>';el.querySelector('button').onclick=()=>openGame(g[4],g[0]);root.appendChild(el)})}
@@ -117,7 +118,7 @@ search.oninput=render;document.querySelectorAll('.filter').forEach(b=>b.onclick=
 const modal=document.getElementById('modal'),c=document.getElementById('board'),x=c.getContext('2d'),status=document.getElementById('gameStatus'),hint=document.getElementById('hint'),controls=document.getElementById('controls');let mode='',timer=0,raf=0,keys={},state={},last=0;
 function text(t){status.textContent=t}function clear(){cancelAnimationFrame(raf);clearInterval(timer);timer=0;raf=0;keys={};controls.innerHTML=''}
 function btn(label,fn){let b=document.createElement('button');b.textContent=label;b.onclick=fn;controls.appendChild(b)}
-function openGame(m,title){clear();mode=m;document.getElementById('gameTitle').textContent=title;modal.classList.add('show');document.getElementById('restart').onclick=()=>openGame(mode,title);setup()}
+function openGame(m,title){if(m==='drive3d'){window.open('./3d-city-drive.html','_blank');return}clear();mode=m;document.getElementById('gameTitle').textContent=title;modal.classList.add('show');document.getElementById('restart').onclick=()=>openGame(mode,title);setup()}
 document.getElementById('close').onclick=()=>{clear();modal.classList.remove('show')};
 document.addEventListener('keydown',e=>{keys[e.key]=true;if(mode==='ttt')return;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});document.addEventListener('keyup',e=>keys[e.key]=false);
 function loop(fn){last=performance.now();function frame(t){let dt=Math.min((t-last)/16.67,2);last=t;fn(dt);raf=requestAnimationFrame(frame)}raf=requestAnimationFrame(frame)}
