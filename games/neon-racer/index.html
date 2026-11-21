@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080d1b">
+<title>Neon Racer 3D | GameZone</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#080d1b;color:#f5f7ff;font-family:Arial,Helvetica,sans-serif}body{display:flex;flex-direction:column}.top{height:62px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;background:#10182a;border-bottom:1px solid #24314d}.brand{font-weight:1000;letter-spacing:-1px;font-size:21px}.brand span{color:#58e6ed}.top a{color:#a9b7d6;text-decoration:none;font-weight:700}.stage{width:min(100%,980px);margin:18px auto;padding:0 14px;flex:1;display:flex;flex-direction:column}.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 10px}.stat{background:#121e35;border:1px solid #263958;border-radius:12px;padding:9px 14px;color:#a9b7d6;font-size:13px}.stat strong{color:white;font-size:18px;margin-left:6px}.canvas-wrap{position:relative;width:100%;aspect-ratio:16/9;min-height:260px;max-height:66vh;overflow:hidden;border:1px solid #2b4167;border-radius:18px;background:#0b1222;box-shadow:0 18px 55px #0008}.canvas-wrap canvas{width:100%;height:100%;display:block}.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:linear-gradient(135deg,#07101de8,#141a35dd)}.overlay.hidden{display:none}.panel{max-width:440px}.eyebrow{color:#62e8ed;font-size:12px;font-weight:900;letter-spacing:2px}.panel h1{font-size:clamp(30px,6vw,54px);line-height:1;margin:12px 0}.panel p{color:#b5c1d8;line-height:1.5}.btn{border:0;border-radius:12px;padding:13px 24px;background:linear-gradient(110deg,#5145df,#14b8c4);color:white;font-weight:900;font-size:15px;cursor:pointer}.hint{font-size:12px!important;color:#8998b7!important}.controls{display:flex;justify-content:center;gap:18px;margin:14px auto 0}.control{width:82px;height:54px;border:1px solid #2b4167;border-radius:14px;background:#14213a;color:#fff;font-size:22px;font-weight:900;touch-action:manipulation}.control:active{background:#5145df}.help{text-align:center;color:#8d9bb7;font-size:12px;margin:12px 0 20px}.error{color:#ffb7b7}.foot{text-align:center;color:#62718e;font-size:12px;padding:0 12px 18px}
+@media(max-width:600px){.top{height:54px}.stage{margin:10px auto;padding:0 9px}.canvas-wrap{aspect-ratio:4/5;min-height:380px;max-height:68vh}.controls{gap:24px}.control{width:100px;height:60px}.stat{padding:8px 10px}.stat strong{font-size:16px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">🎮 GAME<span>ZONE</span></div><a href="../../index.html">← Back to GameZone</a></header>
+<main class="stage">
+<div class="hud"><div class="stat">SCORE <strong id="score">0</strong></div><div class="stat">BEST <strong id="best">0</strong></div><div class="stat">SPEED <strong id="speed">1x</strong></div></div>
+<div class="canvas-wrap">
+<canvas id="game" aria-label="Neon Racer 3D game"></canvas>
+<div class="overlay" id="startScreen"><div class="panel"><div class="eyebrow">GAMEZONE ORIGINAL · 3D WEBGL</div><h1>NEON RACER</h1><p>Dodge the traffic, switch lanes and beat your best score.</p><button class="btn" id="startBtn">START RACING</button><p class="hint">Keyboard: ← → or A / D · Mobile: use the buttons below</p></div></div>
+<div class="overlay hidden" id="overScreen"><div class="panel"><div class="eyebrow">RACE FINISHED</div><h1>CRASH!</h1><p>Your score: <strong id="finalScore">0</strong></p><button class="btn" id="restartBtn">RACE AGAIN</button><p class="hint">Try another lane and beat your best.</p></div></div>
+</div>
+<div class="controls"><button class="control" id="leftBtn" aria-label="Move left">◀</button><button class="control" id="rightBtn" aria-label="Move right">▶</button></div>
+<p class="help">Avoid red traffic blocks. Every block you pass adds 10 points. This original game runs inside GameZone.</p>
+</main>
+<footer class="foot">GameZone Original · No external game website or game embed</footer>
+<script>
+(() => {
+"use strict";
+const canvas=document.getElementById("game");
+const gl=canvas.getContext("webgl",{antialias:true,alpha:false});
+const startScreen=document.getElementById("startScreen");
+const overScreen=document.getElementById("overScreen");
+const scoreEl=document.getElementById("score");
+const bestEl=document.getElementById("best");
+const speedEl=document.getElementById("speed");
+const finalScoreEl=document.getElementById("finalScore");
+let best=Number(localStorage.getItem("gz_neon_racer_best")||0);
+bestEl.textContent=best;
+if(!gl){startScreen.innerHTML='<div class="panel"><h1>WebGL needed</h1><p class="error">This browser does not support WebGL. Try an updated Chrome, Edge or Safari browser.</p></div>';return;}
+const vertexSource=`
+attribute vec3 aPosition;
+uniform mat4 uMVP;
+void main(){gl_Position=uMVP*vec4(aPosition,1.0);}
+`;
+const fragmentSource=`
+precision mediump float;
+uniform vec3 uColor;
+void main(){gl_FragColor=vec4(uColor,1.0);}
+`;
+function shader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
+let program;
+try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vertexSource));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragmentSource));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));}catch(e){startScreen.innerHTML='<div class="panel"><h1>Game could not start</h1><p class="error"></p></div>';startScreen.querySelector(".error").textContent=e.message;return;}
+const cube=[
+-0.5,-0.5,0.5, 0.5,-0.5,0.5, 0.5,0.5,0.5, -0.5,-0.5,0.5, 0.5,0.5,0.5, -0.5,0.5,0.5,
+0.5,-0.5,-0.5, -0.5,-0.5,-0.5, -0.5,0.5,-0.5, 0.5,-0.5,-0.5, -0.5,0.5,-0.5, 0.5,0.5,-0.5,
+-0.5,-0.5,-0.5, -0.5,-0.5,0.5, -0.5,0.5,0.5, -0.5,-0.5,-0.5, -0.5,0.5,0.5, -0.5,0.5,-0.5,
+0.5,-0.5,0.5, 0.5,-0.5,-0.5, 0.5,0.5,-0.5, 0.5,-0.5,0.5, 0.5,0.5,-0.5, 0.5,0.5,0.5,
+-0.5,0.5,0.5, 0.5,0.5,0.5, 0.5,0.5,-0.5, -0.5,0.5,0.5, 0.5,0.5,-0.5, -0.5,0.5,-0.5,
+-0.5,-0.5,-0.5, 0.5,-0.5,-0.5, 0.5,-0.5,0.5, -0.5,-0.5,-0.5, 0.5,-0.5,0.5, -0.5,-0.5,0.5
+];
+const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(cube),gl.STATIC_DRAW);
+gl.useProgram(program);
+const posLoc=gl.getAttribLocation(program,"aPosition");
+const mvpLoc=gl.getUniformLocation(program,"uMVP");
+const colorLoc=gl.getUniformLocation(program,"uColor");
+gl.enableVertexAttribArray(posLoc);gl.vertexAttribPointer(posLoc,3,gl.FLOAT,false,0,0);
+gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);
+function identity(){return new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);}
+function multiply(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o;}
+function translate(x,y,z){const m=identity();m[12]=x;m[13]=y;m[14]=z;return m;}
+function scale(x,y,z){const m=identity();m[0]=x;m[5]=y;m[10]=z;return m;}
+function rotateY(a){const c=Math.cos(a),s=Math.sin(a);return new Float32Array([c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1]);}
+function perspective(fovy,aspect,near,far){const f=1/Math.tan(fovy/2),m=new Float32Array(16);m[0]=f/aspect;m[5]=f;m[10]=(far+near)/(near-far);m[11]=-1;m[14]=(2*far*near)/(near-far);return m;}
+function normalize(v){const n=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/n,v[1]/n,v[2]/n];}
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function lookAt(eye,center,up){const z=normalize([eye[0]-center[0],eye[1]-center[1],eye[2]-center[2]]);const x=normalize(cross(up,z));const y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1]);}
+const view=lookAt([0,5.1,10.5],[0,0,-15],[0,1,0]);
+let projection=perspective(Math.PI/3,16/9,0.1,120);
+function drawBox(x,y,z,sx,sy,sz,color,rotation=0){let model=multiply(translate(x,y,z),multiply(rotateY(rotation),scale(sx,sy,sz)));let mvp=multiply(projection,multiply(view,model));gl.uniformMatrix4fv(mvpLoc,false,mvp);gl.uniform3fv(colorLoc,color);gl.drawArrays(gl.TRIANGLES,0,36);}
+function resize(){const rect=canvas.getBoundingClientRect();const dpr=Math.min(window.devicePixelRatio||1,2);const w=Math.max(1,Math.floor(rect.width*dpr));const h=Math.max(1,Math.floor(rect.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);projection=perspective(Math.PI/3,w/h,0.1,120);}}
+const lanes=[-2.8,0,2.8];
+let lane=1,obstacles=[],spawn=0,roadOffset=0,score=0,speed=15,elapsed=0,state="ready",last=0;
+function updateHud(){scoreEl.textContent=score;speedEl.textContent=(speed/15).toFixed(1)+"x";}
+function reset(){lane=1;obstacles=[];spawn=0.5;roadOffset=0;score=0;speed=15;elapsed=0;state="running";startScreen.classList.add("hidden");overScreen.classList.add("hidden");updateHud();}
+function move(delta){if(state!=="running")return;lane=Math.max(0,Math.min(2,lane+delta));}
+function end(){state="over";if(score>best){best=score;localStorage.setItem("gz_neon_racer_best",String(best));bestEl.textContent=best;}finalScoreEl.textContent=score;overScreen.classList.remove("hidden");}
+function update(dt){elapsed+=dt;speed=Math.min(28,15+elapsed*0.48);roadOffset=(roadOffset+speed*dt)%6;spawn-=dt;if(spawn<=0){obstacles.push({lane:Math.floor(Math.random()*3),z:-48,passed:false});spawn=Math.max(0.72,1.22-elapsed*0.008)+(Math.random()*0.22);}for(const o of obstacles){o.z+=speed*dt;if(!o.passed&&o.z>5.2){o.passed=true;score+=10;scoreEl.textContent=score;}if(o.lane===lane&&Math.abs(o.z-3.8)<1.35){end();break;}}obstacles=obstacles.filter(o=>o.z<12);updateHud();}
+function render(){resize();gl.clearColor(0.025,0.04,0.085,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+drawBox(0,-0.48,-28,10,0.55,76,[0.075,0.105,0.17]);
+drawBox(-5.15,0.02,-28,0.22,0.65,76,[0.08,0.78,0.86]);drawBox(5.15,0.02,-28,0.22,0.65,76,[0.08,0.78,0.86]);
+for(const x of [-1.4,1.4])for(let i=0;i<11;i++){const z=-58+i*6+roadOffset;drawBox(x,-0.185,z,0.075,0.035,2.7,[0.65,0.8,0.92]);}
+for(const o of obstacles){const x=lanes[o.lane];drawBox(x,0.3,o.z,1.35,0.72,1.55,[0.95,0.18,0.28],0.08);}
+const px=lanes[lane];
+drawBox(px,0.2,4,1.2,0.52,2.15,[0.16,0.48,0.98],0);
+drawBox(px,0.62,4.18,0.82,0.42,0.95,[0.08,0.85,0.95],0);
+for(const wx of [-0.48,0.48])for(const wz of [-0.68,0.68])drawBox(px+wx,0.02,4+wz,0.28,0.28,0.42,[0.035,0.045,0.07]);
+drawBox(px,0.25,2.87,0.72,0.12,0.18,[0.95,0.92,0.55]);
+}
+function loop(t){const dt=Math.min((t-last)/1000||0,0.05);last=t;if(state==="running")update(dt);render();requestAnimationFrame(loop);}
+document.getElementById("startBtn").addEventListener("click",reset);
+document.getElementById("restartBtn").addEventListener("click",reset);
+document.getElementById("leftBtn").addEventListener("click",()=>move(-1));
+document.getElementById("rightBtn").addEventListener("click",()=>move(1));
+window.addEventListener("keydown",e=>{if(["ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")move(-1);if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")move(1);if((e.key==="Enter"||e.key===" ")&&state!=="running")reset();});
+let touchStart=null;canvas.addEventListener("touchstart",e=>{touchStart=e.touches[0].clientX;},{passive:true});canvas.addEventListener("touchend",e=>{if(touchStart===null)return;const dx=e.changedTouches[0].clientX-touchStart;if(Math.abs(dx)>24)move(dx<0?-1:1);touchStart=null;},{passive:true});
+window.addEventListener("resize",resize);
+resize();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
