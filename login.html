@@ -1,26 +1,92 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameZone | Login</title>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#eef7f7"><title>GameZone | Login</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#eef7f7;color:#17202a;font-family:Arial,Helvetica,sans-serif;min-height:100vh}.top{padding:20px 5vw;background:#fff;display:flex;justify-content:space-between;align-items:center}.brand{font-size:30px;font-weight:1000;letter-spacing:-1px}.brand span{color:#5145df}a{color:#5145df;text-decoration:none;font-weight:bold}.layout{max-width:950px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:22px}.card{background:#fff;border-radius:24px;padding:28px;box-shadow:0 8px 25px #1b4c5012}.card h1,.card h2{margin-top:0}.sub{color:#78818a}.input{width:100%;padding:13px;border:1px solid #dbe2e7;border-radius:12px;margin:8px 0;font-size:15px}.btn{width:100%;border:0;border-radius:12px;padding:13px;margin-top:9px;background:#5145df;color:#fff;font-weight:bold;cursor:pointer}.btn.alt{background:#eef0ff;color:#5145df}.note{font-size:13px;color:#78818a;line-height:1.5}.status{margin-top:12px;font-size:14px;min-height:20px}.profile{padding:15px;background:#f5f7fa;border-radius:14px;margin-top:12px}.pill{display:inline-block;background:#e9ecff;color:#5145df;border-radius:20px;padding:6px 10px;margin:3px;font-size:13px}@media(max-width:700px){.layout{grid-template-columns:1fr;margin:20px auto}.top{padding:16px}.brand{font-size:25px}}
-</style></head><body>
-<header class="top"><div class="brand">🎮 GAME<span>ZONE</span></div><a href="index.html">← Back to games</a></header>
-<main class="layout"><section class="card"><h1>Welcome, gamer!</h1><p class="sub">Sign in or create an account to keep your GameZone profile.</p>
-<form id="authForm"><input class="input" id="displayName" placeholder="Gamer name (for sign up)"><input class="input" id="email" type="email" placeholder="Email address" required><input class="input" id="password" type="password" placeholder="Password (6+ characters)" minlength="6" required><button class="btn" type="button" id="signup">Create account</button><button class="btn alt" type="button" id="signin">Log in</button><button class="btn alt" type="button" id="google">Continue with Google</button><button class="btn alt" type="button" id="logout" style="display:none">Log out</button></form><div id="status" class="status"></div><p class="note">Firebase setup is required to enable real accounts and cloud sync. <a href="https://github.com/parmarhiten153-netizen/gamezone/blob/main/FIREBASE_SETUP.md" target="_blank" rel="noopener">Open the beginner Firebase setup guide</a>.</p></section>
-<section class="card"><h2>Your gaming profile</h2><p class="sub">Guest progress stays in this browser. Cloud sync appears after Firebase is configured and you sign in.</p><div id="profile" class="profile"><strong id="profileName">Guest player</strong><br>Favorite games: <span id="favcount">0</span><br>Recently played: <span id="recentcount">0</span><hr><strong>Favorites</strong><div id="favoriteNames" class="note">No favorites saved yet.</div><br><strong>Recently played</strong><div id="recentNames" class="note">No games played yet.</div></div><h3>Progress sync setup</h3><p class="note">To turn on secure accounts and cloud saving, add your Firebase web config in this page's script, enable Email/Password and Google sign-in, then create a Firestore database. This demo page doesn't save passwords locally.</p></section></main>
+*{box-sizing:border-box}body{margin:0;background:#eef7f7;color:#17202a;font-family:Arial,Helvetica,sans-serif;min-height:100vh}.top{padding:18px 5vw;background:#fff;display:flex;justify-content:space-between;align-items:center}.brand{font-size:29px;font-weight:1000;letter-spacing:-1px}.brand span{color:#5145df}a{color:#5145df;text-decoration:none;font-weight:bold}.layout{max-width:960px;margin:34px auto;padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:#fff;border-radius:22px;padding:26px;box-shadow:0 8px 25px #1b4c5012}.card h1,.card h2{margin-top:0}.sub{color:#78818a;line-height:1.45}.input{width:100%;padding:13px;border:1px solid #dbe2e7;border-radius:12px;margin:8px 0;font-size:15px}.btn{width:100%;border:0;border-radius:12px;padding:13px;margin-top:9px;background:#5145df;color:#fff;font-weight:bold;cursor:pointer}.btn.alt{background:#eef0ff;color:#5145df}.btn:disabled{opacity:.5;cursor:not-allowed}.note{font-size:13px;color:#78818a;line-height:1.55}.status{margin-top:12px;font-size:14px;min-height:38px;color:#5145df}.profile{padding:15px;background:#f5f7fa;border-radius:14px;margin-top:12px;line-height:1.8}.list{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px}.list a{background:#e9ecff;border-radius:9px;padding:6px 9px;font-size:12px}.muted{color:#78818a;font-size:13px}@media(max-width:700px){.layout{grid-template-columns:1fr;margin:18px auto}.top{padding:15px}.brand{font-size:25px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">🎮 GAME<span>ZONE</span></div><a href="index.html">← Back to GameZone</a></header>
+<main class="layout">
+<section class="card">
+<h1>Welcome, gamer!</h1><p class="sub">Create your GameZone account or log in. Guest favorites and recent games remain on this device.</p>
+<form id="authForm">
+<input class="input" id="displayName" placeholder="Gamer name (for sign up)" autocomplete="nickname">
+<input class="input" id="email" type="email" placeholder="Email address" autocomplete="email" required>
+<input class="input" id="password" type="password" placeholder="Password (minimum 6 characters)" minlength="6" autocomplete="current-password" required>
+<button class="btn" type="button" id="signup">Create account</button>
+<button class="btn alt" type="button" id="signin">Log in</button>
+<button class="btn alt" type="button" id="google">Continue with Google</button>
+<button class="btn alt" type="button" id="logout" hidden>Log out</button>
+</form>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<p class="note">Real account login needs your Firebase web-app config. Until it is added, this page stays in guest mode. Never put a Firebase service-account private key here.</p>
+</section>
+<section class="card">
+<h2>Your gaming profile</h2><p class="sub">Your local gaming activity is shown below. Cloud sync is not active yet.</p>
+<div class="profile"><strong id="profileName">Guest player</strong><br>Favorite games: <strong id="favcount">0</strong><br>Recently played: <strong id="recentcount">0</strong><hr>
+<strong>Favorites</strong><div class="list" id="favoriteNames"><span class="muted">No favorites saved yet.</span></div>
+<strong>Recently played</strong><div class="list" id="recentNames"><span class="muted">No games played yet.</span></div>
+</div>
+<h3>Progress saving</h3><p class="note">Favorites and recent games currently use this browser's local storage. Firebase can sync the profile after setup. Each game's score or level can sync only if that game has its own save/load code.</p>
+<p class="note"><a href="https://github.com/parmarhiten153-netizen/gamezone/blob/main/FIREBASE_SETUP.md" target="_blank" rel="noopener">Open the beginner Firebase setup guide</a></p>
+</section>
+</main>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig={apiKey:"YOUR_FIREBASE_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT_ID",appId:"YOUR_FIREBASE_APP_ID"};
-const configured=Object.values(firebaseConfig).every(v=>typeof v==="string"&&v&&!v.startsWith("YOUR_"));
+const configured=Object.values(firebaseConfig).every(value=>typeof value==="string"&&value&&!value.startsWith("YOUR_"));
 const status=document.getElementById("status");
-function say(s){status.textContent=s}
-function localStats(){const names={"snow-rider-3d":"Snow Rider 3D","subway-surfers":"Subway Surfers","smash-karts":"SmashKarts.io","temple-run-2":"Temple Run 2","candy-match":"Candy Match","ludo":"Ludo","level-devil":"Level Devil"};const urls={"snow-rider-3d":"https://gamebiz.com/game/snow-rider-3d","subway-surfers":"https://poki.com/en/g/subway-surfers","smash-karts":"https://smashkarts.io/","temple-run-2":"https://poki.com/en/g/temple-run-2","candy-match":"candy-crush.html","ludo":"ludo.html","level-devil":"level-devil.html"};const fav=JSON.parse(localStorage.getItem("gamezone_favorites")||"[]");const recent=JSON.parse(localStorage.getItem("gamezone_recent")||"[]");document.getElementById("favcount").textContent=fav.length;document.getElementById("recentcount").textContent=recent.length;document.getElementById("favoriteNames").innerHTML=fav.length?fav.map(id=>'<a href="'+urls[id]+'">'+names[id]+'</a>').join(" · "):"No favorites saved yet.";document.getElementById("recentNames").innerHTML=recent.length?recent.map(x=>'<a href="'+urls[x.id]+'">'+names[x.id]+'</a>').join(" · "):"No games played yet."}
-localStats();
-let auth,db;
-if(configured){const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);onAuthStateChanged(auth,async user=>{document.getElementById("logout").style.display=user?"block":"none";if(!user){document.getElementById("profileName").textContent="Guest player";return;}document.getElementById("profileName").textContent="Signed in as "+(user.displayName||user.email);const snap=await getDoc(doc(db,"users",user.uid));if(!snap.exists())await setDoc(doc(db,"users",user.uid),{displayName:user.displayName||"",email:user.email,favorites:[],recentGames:[],createdAt:Date.now()},{merge:true});})}
-else say("Firebase not connected yet. Guest stats are saved on this browser; cloud login will work after setup.");
-document.getElementById("signup").onclick=async()=>{if(!configured)return say("Firebase config is missing. Add your Firebase web app keys first.");try{const name=document.getElementById("displayName").value.trim();const email=document.getElementById("email").value.trim();const pass=document.getElementById("password").value;const c=await createUserWithEmailAndPassword(auth,email,pass);if(name)await updateProfile(c.user,{displayName:name});await setDoc(doc(db,"users",c.user.uid),{displayName:name,email,favorites:[],recentGames:[],createdAt:Date.now()},{merge:true});say("Account created!")}catch(e){say(e.message)}};
-document.getElementById("signin").onclick=async()=>{if(!configured)return say("Firebase config is missing. Add your Firebase web app keys first.");try{await signInWithEmailAndPassword(auth,document.getElementById("email").value.trim(),document.getElementById("password").value);say("Logged in!")}catch(e){say(e.message)}};
-document.getElementById("logout").onclick=async()=>{try{await signOut(auth);say("You are logged out.")}catch(e){say(e.message)}};\ndocument.getElementById("google").onclick=async()=>{if(!configured)return say("Firebase config is missing. Add your Firebase web app keys first.");try{await signInWithPopup(auth,new GoogleAuthProvider());say("Google sign-in complete!")}catch(e){say(e.message)}};
-</script></body></html>
+const say=message=>{status.textContent=message;};
+const games={
+"neon-racer":{name:"Neon Racer 3D",url:"games/neon-racer/index.html"},
+"candy-match":{name:"Candy Match",url:"candy-crush.html"},
+"ludo":{name:"Ludo",url:"ludo.html"},
+"level-devil":{name:"Level Devil",url:"level-devil.html"}
+};
+function read(key){try{return JSON.parse(localStorage.getItem(key)||"[]");}catch{return [];}}
+function addLink(container,item){const a=document.createElement("a");a.href=item.url;a.textContent=item.name;container.appendChild(a);}
+function renderLocal(){
+const fav=read("gamezone_favorites").filter(id=>games[id]);
+const recent=read("gamezone_recent").filter(item=>item&&games[item.id]);
+document.getElementById("favcount").textContent=fav.length;
+document.getElementById("recentcount").textContent=recent.length;
+const favBox=document.getElementById("favoriteNames");favBox.replaceChildren();
+if(fav.length)fav.forEach(id=>addLink(favBox,games[id]));else favBox.textContent="No favorites saved yet.";
+const recentBox=document.getElementById("recentNames");recentBox.replaceChildren();
+if(recent.length)recent.forEach(item=>addLink(recentBox,games[item.id]));else recentBox.textContent="No games played yet.";
+}
+renderLocal();
+let auth=null,db=null;
+if(configured){
+const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);
+onAuthStateChanged(auth,async user=>{
+document.getElementById("logout").hidden=!user;
+document.getElementById("profileName").textContent=user?"Signed in as "+(user.displayName||user.email):"Guest player";
+if(user){try{const ref=doc(db,"users",user.uid);const snap=await getDoc(ref);if(!snap.exists())await setDoc(ref,{displayName:user.displayName||"",email:user.email,favorites:[],recentGames:[],createdAt:Date.now()},{merge:true});say("You are signed in. Cloud profile is connected.");}catch(error){say("Signed in, but profile could not load: "+error.message);}}
+});
+}else{
+say("Firebase is not connected yet. Guest mode works; add the Firebase web config to activate real accounts.");
+}
+document.getElementById("signup").addEventListener("click",async()=>{
+if(!configured)return say("Firebase config is missing. Follow FIREBASE_SETUP.md and add the web-app config first.");
+try{const name=document.getElementById("displayName").value.trim();const email=document.getElementById("email").value.trim();const password=document.getElementById("password").value;const credential=await createUserWithEmailAndPassword(auth,email,password);if(name)await updateProfile(credential.user,{displayName:name});await setDoc(doc(db,"users",credential.user.uid),{displayName:name,email,favorites:[],recentGames:[],createdAt:Date.now()},{merge:true});say("Account created successfully.");}catch(error){say(error.message);}
+});
+document.getElementById("signin").addEventListener("click",async()=>{
+if(!configured)return say("Firebase config is missing. Follow FIREBASE_SETUP.md and add the web-app config first.");
+try{await signInWithEmailAndPassword(auth,document.getElementById("email").value.trim(),document.getElementById("password").value);say("Login successful.");}catch(error){say(error.message);}
+});
+document.getElementById("google").addEventListener("click",async()=>{
+if(!configured)return say("Firebase config is missing. Follow FIREBASE_SETUP.md and add the web-app config first.");
+try{await signInWithPopup(auth,new GoogleAuthProvider());say("Google login successful.");}catch(error){say(error.message);}
+});
+document.getElementById("logout").addEventListener("click",async()=>{
+if(!auth)return;try{await signOut(auth);say("You are logged out.");}catch(error){say(error.message);}
+});
+</script>
+</body>
+</html>
