@@ -22,7 +22,7 @@ Neon Racer 3D and Bike Rush 3D are original GameZone games. They are not Play St
 
 ## Local player data
 
-Favorites, recently played games, and the Neon Racer best score currently use browser local storage. They stay on the current browser/device. Firebase Authentication and Firestore setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Account login does not automatically sync a game's score: each game needs its own save/load integration.
+Favorites, recently played games, and the Neon Racer and Bike Rush best scores currently use browser local storage. They stay on the current browser/device. Firebase Authentication and Firestore setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Account login does not automatically sync a game's score: each game needs its own save/load integration.
 
 ## Deploy
 
