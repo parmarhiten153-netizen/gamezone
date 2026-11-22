@@ -7,6 +7,7 @@ A small browser-game website hosted with GitHub Pages.
 | Game | Type | Entry file |
 | --- | --- | --- |
 | Neon Racer 3D | Original GameZone 3D WebGL racing game | `games/neon-racer/index.html` |
+| Bike Rush 3D | Original GameZone 3D motorcycle traffic game | `games/bike-rush/index.html` |
 | Candy Match | GameZone puzzle mini-game | `candy-crush.html` |
 | Ludo | Local four-player board game | `ludo.html` |
 | Level Devil | Canvas platformer | `level-devil.html` |
@@ -17,7 +18,7 @@ All game cards on the homepage open pages on the GameZone site. The homepage doe
 
 A title being available on Google Play does not grant permission to copy its APK, source code, art, or levels into this repository. GameZone will only self-host another publisher's game if the publisher supplies an authorized web build or a license that explicitly permits redistribution/hosting. Otherwise, the site can link to the Play Store listing as information, but should not present a clone as the original game.
 
-Neon Racer 3D is an original GameZone game. It is not the Play Store version of another title.
+Neon Racer 3D and Bike Rush 3D are original GameZone games. They are not Play Store versions of other titles. The 3D games use the repository's local Three.js v160 build (`three.min.js`), distributed under the MIT license.
 
 ## Local player data
 
