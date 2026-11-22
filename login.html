@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#eef7f7"><title>GameZone | Login</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#eef7f7;color:#17202a;font-family:Arial,Helvetica,sans-serif;min-height:100vh}.top{padding:18px 5vw;background:#fff;display:flex;justify-content:space-between;align-items:center}.brand{font-size:29px;font-weight:1000;letter-spacing:-1px}.brand span{color:#5145df}a{color:#5145df;text-decoration:none;font-weight:bold}.layout{max-width:960px;margin:34px auto;padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:#fff;border-radius:22px;padding:26px;box-shadow:0 8px 25px #1b4c5012}.card h1,.card h2{margin-top:0}.sub{color:#78818a;line-height:1.45}.input{width:100%;padding:13px;border:1px solid #dbe2e7;border-radius:12px;margin:8px 0;font-size:15px}.btn{width:100%;border:0;border-radius:12px;padding:13px;margin-top:9px;background:#5145df;color:#fff;font-weight:bold;cursor:pointer}.btn.alt{background:#eef0ff;color:#5145df}.btn:disabled{opacity:.5;cursor:not-allowed}.note{font-size:13px;color:#78818a;line-height:1.55}.status{margin-top:12px;font-size:14px;min-height:38px;color:#5145df}.profile{padding:15px;background:#f5f7fa;border-radius:14px;margin-top:12px;line-height:1.8}.list{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px}.list a{background:#e9ecff;border-radius:9px;padding:6px 9px;font-size:12px}.muted{color:#78818a;font-size:13px}@media(max-width:700px){.layout{grid-template-columns:1fr;margin:18px auto}.top{padding:15px}.brand{font-size:25px}}
+*{box-sizing:border-box}body{margin:0;background:#eef7f7;color:#17202a;font-family:Arial,Helvetica,sans-serif;min-height:100vh}.top{padding:18px 5vw;background:#fff;display:flex;justify-content:space-between;align-items:center}.brand{font-size:29px;font-weight:1000;letter-spacing:-1px}.brand span{color:#5145df}a{color:#5145df;text-decoration:none;font-weight:bold}.layout{max-width:960px;margin:34px auto;padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:#fff;border-radius:22px;padding:26px;box-shadow:0 8px 25px #1b4c5012}.card h1,.card h2{margin-top:0}.sub{color:#78818a;line-height:1.45}.input{width:100%;padding:13px;border:1px solid #dbe2e7;border-radius:12px;margin:8px 0;font-size:15px}.btn{width:100%;border:0;border-radius:12px;padding:13px;margin-top:9px;background:#5145df;color:#fff;font-weight:bold;cursor:pointer}.btn.alt{background:#eef0ff;color:#5145df}.btn:disabled{opacity:.5;cursor:not-allowed}.note{font-size:13px;color:#78818a;line-height:1.55}.status{margin-top:12px;font-size:14px;min-height:38px;color:#5145df}.profile{padding:15px;background:#f5f7fa;border-radius:14px;margin-top:12px;line-height:1.8}.list{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px}.list a{background:#e9ecff;border-radius:9px;padding:6px 9px;font-size:12px}.score-pill{background:#e5f8f5;color:#08766e;border-radius:9px;padding:6px 9px;font-size:12px;font-weight:700}.muted{color:#78818a;font-size:13px}@media(max-width:700px){.layout{grid-template-columns:1fr;margin:18px auto}.top{padding:15px}.brand{font-size:25px}}
 </style>
 </head>
 <body>
@@ -28,7 +28,7 @@
 <h2>Your gaming profile</h2><p class="sub">Your local gaming activity is shown below. Cloud sync is not active yet.</p>
 <div class="profile"><strong id="profileName">Guest player</strong><br>Favorite games: <strong id="favcount">0</strong><br>Recently played: <strong id="recentcount">0</strong><hr>
 <strong>Favorites</strong><div class="list" id="favoriteNames"><span class="muted">No favorites saved yet.</span></div>
-<strong>Recently played</strong><div class="list" id="recentNames"><span class="muted">No games played yet.</span></div>
+<strong>Recently played</strong><div class="list" id="recentNames"><span class="muted">No games played yet.</span></div><strong>Best scores on this device</strong><div class="list" id="bestScores"><span class="muted">No scores saved yet.</span></div>
 </div>
 <h3>Progress saving</h3><p class="note">Favorites and recent games currently use this browser's local storage. Firebase can sync the profile after setup. Each game's score or level can sync only if that game has its own save/load code.</p>
 <p class="note"><a href="https://github.com/parmarhiten153-netizen/gamezone/blob/main/FIREBASE_SETUP.md" target="_blank" rel="noopener">Open the beginner Firebase setup guide</a></p>
@@ -60,6 +60,9 @@ const favBox=document.getElementById("favoriteNames");favBox.replaceChildren();
 if(fav.length)fav.forEach(id=>addLink(favBox,games[id]));else favBox.textContent="No favorites saved yet.";
 const recentBox=document.getElementById("recentNames");recentBox.replaceChildren();
 if(recent.length)recent.forEach(item=>addLink(recentBox,games[item.id]));else recentBox.textContent="No games played yet.";
+const scoreBox=document.getElementById("bestScores");scoreBox.replaceChildren();
+const scores=[["Neon Racer 3D",Number(localStorage.getItem("gz_neon_racer_best")||0)],["Bike Rush 3D",Number(localStorage.getItem("gz_bike_rush_best")||0)]].filter(item=>Number.isFinite(item[1])&&item[1]>0);
+if(scores.length){scores.forEach(([name,value])=>{const pill=document.createElement("span");pill.className="score-pill";pill.textContent=name+": "+value;scoreBox.appendChild(pill);});}else{scoreBox.textContent="No scores saved yet.";}
 }
 renderLocal();
 let auth=null,db=null;
