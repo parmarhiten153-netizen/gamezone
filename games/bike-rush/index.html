@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#081321">
+<title>Bike Rush 3D | GameZone</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#081321;color:#f4f7ff;font-family:Arial,Helvetica,sans-serif}body{display:flex;flex-direction:column}.top{height:60px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;background:#101d30;border-bottom:1px solid #263b55}.brand{font-size:21px;font-weight:1000}.brand span{color:#50e4d0}.top a{color:#b7c8df;text-decoration:none;font-weight:700}.stage{width:min(100%,1000px);margin:14px auto;padding:0 12px;flex:1;display:flex;flex-direction:column}.hud{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px}.stat{flex:1;background:#13243a;border:1px solid #29445e;border-radius:12px;padding:9px 12px;color:#9db1cb;font-size:12px}.stat strong{display:block;color:#fff;font-size:20px;margin-top:3px}.gamebox{position:relative;width:100%;height:min(66vh,590px);min-height:360px;overflow:hidden;border:1px solid #29445e;border-radius:18px;background:#0b1b2b;box-shadow:0 18px 55px #0008}.gamebox canvas{display:block;width:100%;height:100%;touch-action:pan-y}.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:linear-gradient(135deg,#07111de8,#10253bdc)}.overlay.hidden{display:none}.panel{max-width:440px}.eyebrow{color:#55e4d0;font-size:12px;font-weight:900;letter-spacing:2px}.panel h1{font-size:clamp(32px,7vw,58px);line-height:1;margin:12px 0}.panel p{color:#b5c5d9;line-height:1.5}.btn{border:0;border-radius:12px;padding:13px 24px;background:linear-gradient(110deg,#11a99b,#42d9c4);color:#062a2b;font-weight:1000;font-size:15px;cursor:pointer}.hint{font-size:12px!important;color:#91a6c2!important}.controls{display:flex;justify-content:center;gap:18px;margin:12px auto}.control{width:104px;height:58px;border:1px solid #2d4b68;border-radius:14px;background:#142941;color:#fff;font-size:23px;font-weight:900;touch-action:manipulation}.control:active{background:#087f7b}.help{text-align:center;color:#8da1bb;font-size:12px;line-height:1.5;margin:0 0 16px}.foot{text-align:center;color:#60748f;font-size:12px;padding:0 12px 16px}
+@media(max-width:600px){.top{height:54px}.stage{margin:9px auto;padding:0 8px}.gamebox{height:58vh;min-height:390px;max-height:620px}.stat{padding:8px}.stat strong{font-size:18px}.control{width:120px;height:62px}.controls{gap:24px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">🎮 GAME<span>ZONE</span></div><a href="../../index.html">← Back to GameZone</a></header>
+<main class="stage">
+<div class="hud"><div class="stat">SCORE<strong id="score">0</strong></div><div class="stat">BEST<strong id="best">0</strong></div><div class="stat">SPEED<strong id="speed">1x</strong></div></div>
+<div class="gamebox" id="gamebox">
+<div class="overlay" id="startScreen"><div class="panel"><div class="eyebrow">GAMEZONE ORIGINAL · 3D</div><h1>BIKE RUSH</h1><p>Ride through traffic, switch lanes and keep your bike safe. How long can you last?</p><button class="btn" id="startBtn">START RIDE</button><p class="hint">Keyboard: ← → / A D · Mobile: use the lane buttons or swipe</p></div></div>
+<div class="overlay hidden" id="overScreen"><div class="panel"><div class="eyebrow">RIDE OVER</div><h1>CRASH!</h1><p>Your score: <strong id="finalScore">0</strong></p><button class="btn" id="restartBtn">RIDE AGAIN</button><p class="hint">Switch lanes earlier to avoid traffic.</p></div></div>
+</div>
+<div class="controls"><button class="control" id="leftBtn" aria-label="Move bike left">◀ LEFT</button><button class="control" id="rightBtn" aria-label="Move bike right">RIGHT ▶</button></div>
+<p class="help">Avoid the traffic cars. Each car you pass earns points. This is an original GameZone game and runs from this website's own files.</p>
+</main>
+<footer class="foot">GameZone Original · Three.js is used under its MIT license</footer>
+<script src="../../three.min.js"></script>
+<script>
+(() => {
+"use strict";
+const box=document.getElementById("gamebox");
+const scoreEl=document.getElementById("score");
+const bestEl=document.getElementById("best");
+const speedEl=document.getElementById("speed");
+const startScreen=document.getElementById("startScreen");
+const overScreen=document.getElementById("overScreen");
+const finalScoreEl=document.getElementById("finalScore");
+let best=Number(localStorage.getItem("gz_bike_rush_best")||0);
+bestEl.textContent=best;
+if(!window.THREE){startScreen.innerHTML='<div class="panel"><h1>Game library missing</h1><p>Three.js could not load. Please refresh the GameZone page.</p></div>';return;}
+const THREE=window.THREE;
+let renderer,scene,camera,bike,roadMarks=[],scenery=[],obstacles=[];
+let running=false,score=0,lane=1,targetLane=1,speed=24,spawnTimer=0,lastTime=0;
+const laneX=[-3.25,0,3.25];
+const bikeZ=5;
+const clock=new THREE.Clock();
+try{
+renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.setSize(box.clientWidth,box.clientHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+box.prepend(renderer.domElement);
+}catch(error){
+startScreen.innerHTML='<div class="panel"><h1>3D not available</h1><p>This browser could not start WebGL. Try an updated Chrome, Edge or Safari browser.</p></div>';return;
+}
+scene=new THREE.Scene();
+scene.background=new THREE.Color(0x091827);
+scene.fog=new THREE.Fog(0x091827,34,112);
+camera=new THREE.PerspectiveCamera(58,box.clientWidth/box.clientHeight,.1,180);
+camera.position.set(0,8.5,14.5);
+camera.lookAt(0,1,-12);
+scene.add(new THREE.HemisphereLight(0x9bdcff,0x16202b,2.1));
+const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(-7,14,8);scene.add(sun);
+const roadMat=new THREE.MeshStandardMaterial({color:0x202b38,roughness:.94});
+const road=new THREE.Mesh(new THREE.PlaneGeometry(12,150),roadMat);road.rotation.x=-Math.PI/2;road.position.set(0,-.06,-55);scene.add(road);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({color:0x102b2a,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.14;ground.position.z=-48;scene.add(ground);
+const edgeMat=new THREE.MeshStandardMaterial({color:0x46d8c7,emissive:0x0b514b,emissiveIntensity:.55});
+for(const x of [-5.9,5.9]){const edge=new THREE.Mesh(new THREE.BoxGeometry(.12,.08,150),edgeMat);edge.position.set(x,.02,-55);scene.add(edge);}
+const markMat=new THREE.MeshStandardMaterial({color:0xc6d9e7,emissive:0x233e50,emissiveIntensity:.3});
+for(const x of [-2.05,2.05])for(let i=0;i<16;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(.12,.035,3.5),markMat);m.position.set(x,.015,-i*8-3);scene.add(m);roadMarks.push(m);}
+function makeBar(parent,a,b,r,material){const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),dir=end.clone().sub(start);const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,dir.length(),8),material);mesh.position.copy(start).add(end).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());parent.add(mesh);return mesh;}
+function buildBike(){
+const g=new THREE.Group();
+const frame=new THREE.MeshStandardMaterial({color:0x24d9c7,metalness:.45,roughness:.35});
+const dark=new THREE.MeshStandardMaterial({color:0x101820,metalness:.2,roughness:.65});
+const silver=new THREE.MeshStandardMaterial({color:0xb7d1df,metalness:.8,roughness:.25});
+const red=new THREE.MeshStandardMaterial({color:0xff5c65,metalness:.25,roughness:.35});
+for(const z of [-1.05,1.05]){
+const wheel=new THREE.Mesh(new THREE.TorusGeometry(.48,.105,12,28),dark);wheel.rotation.y=Math.PI/2;wheel.position.set(0,.55,z);g.add(wheel);
+const hub=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.24,16),silver);hub.rotation.z=Math.PI/2;hub.position.set(0,.55,z);g.add(hub);
+for(let i=0;i<6;i++){const a=i*Math.PI/3;makeBar(g,[0,.55,z],[0,.55+Math.cos(a)*.39,z+Math.sin(a)*.39],.018,silver);}
+}
+makeBar(g,[0,.55,1.05],[0,1.15,.25],.075,frame);
+makeBar(g,[0,.55,-1.05],[0,1.15,.25],.075,frame);
+makeBar(g,[0,1.15,.25],[0,1.3,-.55],.07,frame);
+makeBar(g,[0,1.3,-.55],[0,.55,-1.05],.055,silver);
+const tank=new THREE.Mesh(new THREE.BoxGeometry(.68,.43,.85),red);tank.position.set(0,1.24,-.05);tank.rotation.x=-.12;g.add(tank);
+const seat=new THREE.Mesh(new THREE.BoxGeometry(.55,.16,.55),dark);seat.position.set(0,1.34,.62);g.add(seat);
+const engine=new THREE.Mesh(new THREE.BoxGeometry(.58,.55,.55),silver);engine.position.set(0,.82,.28);g.add(engine);
+makeBar(g,[0,1.25,-.55],[-.62,1.45,-.63],.045,dark);makeBar(g,[0,1.25,-.55],[.62,1.45,-.63],.045,dark);
+const riderBody=new THREE.Mesh(new THREE.CapsuleGeometry(.28,.65,5,10),new THREE.MeshStandardMaterial({color:0x253f7c,roughness:.65}));riderBody.position.set(0,1.82,.34);riderBody.rotation.x=-.25;g.add(riderBody);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.25,18,14),new THREE.MeshStandardMaterial({color:0xffc49c,roughness:.8}));head.position.set(0,2.28,.05);g.add(head);
+const helmet=new THREE.Mesh(new THREE.SphereGeometry(.29,18,14,0,Math.PI*2,0,Math.PI*.58),new THREE.MeshStandardMaterial({color:0x13b7bd,metalness:.25,roughness:.35}));helmet.position.set(0,2.33,.05);g.add(helmet);
+makeBar(g,[-.18,1.95,.1],[-.57,1.43,-.58],.095,new THREE.MeshStandardMaterial({color:0xffc49c}));
+makeBar(g,[.18,1.95,.1],[.57,1.43,-.58],.095,new THREE.MeshStandardMaterial({color:0xffc49c}));
+const lamp=new THREE.Mesh(new THREE.SphereGeometry(.16,12,10),new THREE.MeshBasicMaterial({color:0x9cfff3}));lamp.position.set(0,1.35,-.91);g.add(lamp);
+g.position.set(0,0,bikeZ);scene.add(g);return g;
+}
+bike=buildBike();
+const treeMat=new THREE.MeshStandardMaterial({color:0x167b69,roughness:1});
+const trunkMat=new THREE.MeshStandardMaterial({color:0x70503a});
+function addTree(x,z){const g=new THREE.Group();const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16,.22,1.25,7),trunkMat);trunk.position.y=.62;g.add(trunk);const crown=new THREE.Mesh(new THREE.ConeGeometry(.85,2.1,7),treeMat);crown.position.y=2.05;g.add(crown);g.position.set(x,0,z);scene.add(g);scenery.push(g);}
+for(let i=0;i<12;i++){addTree(-9-(i%3)*1.5,-i*10-8);addTree(9+(i%3)*1.5,-i*10-13);}
+function makeCar(color){
+const g=new THREE.Group();
+const bodyMat=new THREE.MeshStandardMaterial({color,metalness:.25,roughness:.45});
+const body=new THREE.Mesh(new THREE.BoxGeometry(1.65,.72,2.45),bodyMat);body.position.y=.72;g.add(body);
+const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.25,.62,1.15),new THREE.MeshStandardMaterial({color:0x172c40,metalness:.2,roughness:.25}));cabin.position.set(0,1.34,.1);g.add(cabin);
+const wheelMat=new THREE.MeshStandardMaterial({color:0x080d13,roughness:1});
+for(const x of [-.86,.86])for(const z of [-.78,.78]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.16,12),wheelMat);w.rotation.z=Math.PI/2;w.position.set(x,.38,z);g.add(w);}
+const lampMat=new THREE.MeshBasicMaterial({color:0xfff0b1});
+for(const x of [-.48,.48]){const l=new THREE.Mesh(new THREE.BoxGeometry(.25,.16,.06),lampMat);l.position.set(x,.83,-1.25);g.add(l);}
+return g;
+}
+function spawnCar(){const colors=[0xff5b68,0xffb347,0x5b8cff,0xe6e9ef];const car=makeCar(colors[Math.floor(Math.random()*colors.length)]);const li=Math.floor(Math.random()*3);car.position.set(laneX[li],0,-82);scene.add(car);obstacles.push({mesh:car,passed:false,lane:li});}
+function clearObstacles(){obstacles.forEach(o=>scene.remove(o.mesh));obstacles=[];}
+function updateHud(){scoreEl.textContent=Math.floor(score);speedEl.textContent=(speed/24).toFixed(1)+"x";}
+function endGame(){running=false;const final=Math.floor(score);finalScoreEl.textContent=final;if(final>best){best=final;localStorage.setItem("gz_bike_rush_best",String(best));bestEl.textContent=best;}overScreen.classList.remove("hidden");}
+function startGame(){clearObstacles();lane=1;targetLane=1;bike.position.x=0;bike.rotation.z=0;score=0;speed=24;spawnTimer=.5;lastTime=performance.now();updateHud();startScreen.classList.add("hidden");overScreen.classList.add("hidden");running=true;}
+function changeLane(dir){if(!running)return;targetLane=Math.max(0,Math.min(2,targetLane+dir));}
+function resize(){if(!renderer)return;const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+window.addEventListener("resize",resize);
+window.addEventListener("keydown",e=>{if(["ArrowLeft","ArrowRight","a","A","d","D"].includes(e.key)){e.preventDefault();if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A")changeLane(-1);else changeLane(1);}if((e.key===" "||e.key==="Enter")&&!running&&(startScreen.classList.contains("hidden")||!overScreen.classList.contains("hidden")))startGame();});
+document.getElementById("leftBtn").addEventListener("click",()=>changeLane(-1));
+document.getElementById("rightBtn").addEventListener("click",()=>changeLane(1));
+document.getElementById("startBtn").addEventListener("click",startGame);
+document.getElementById("restartBtn").addEventListener("click",startGame);
+let touchStartX=null;
+renderer.domElement.addEventListener("touchstart",e=>{touchStartX=e.changedTouches[0].clientX;},{passive:true});
+renderer.domElement.addEventListener("touchend",e=>{if(touchStartX===null)return;const dx=e.changedTouches[0].clientX-touchStartX;if(Math.abs(dx)>24)changeLane(dx<0?-1:1);touchStartX=null;},{passive:true});
+function animate(now){
+requestAnimationFrame(animate);
+const dt=Math.min((now-lastTime)/1000||0,.05);lastTime=now;
+if(running){
+score+=dt*4.5;speed=Math.min(48,24+score*.012);
+const targetX=laneX[targetLane];bike.position.x+= (targetX-bike.position.x)*Math.min(1,dt*10);
+bike.rotation.z+=(Math.max(-.16,Math.min(.16,(targetX-bike.position.x)*-.08))-bike.rotation.z)*Math.min(1,dt*9);
+for(const m of roadMarks){m.position.z+=speed*dt;if(m.position.z>10)m.position.z-=128;}
+for(const tree of scenery){tree.position.z+=speed*dt*.72;if(tree.position.z>14)tree.position.z-=132;}
+spawnTimer-=dt;if(spawnTimer<=0){spawnCar();spawnTimer=Math.max(.68,1.35-score/1600)+(Math.random()*.28);}
+for(let i=obstacles.length-1;i>=0;i--){const o=obstacles[i];o.mesh.position.z+=speed*dt;if(!o.passed&&o.mesh.position.z>bikeZ+2){o.passed=true;score+=12;}if(Math.abs(o.mesh.position.z-bikeZ)<1.45&&Math.abs(o.mesh.position.x-bike.position.x)<1.35){endGame();break;}if(o.mesh.position.z>15){scene.remove(o.mesh);obstacles.splice(i,1);}}
+updateHud();
+}
+renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
