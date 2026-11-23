@@ -1750,6 +1750,7 @@ const Game = {
     const done = getDone();
     done[this.levelIndex] = true;
     localStorage.setItem("fd_done", JSON.stringify(done));
+    window.dispatchEvent(new Event("gamezone:data-changed"));
   },
 
   startWipe(cb) { this.wipeDir = 1; this.wipeNext = cb; },
@@ -2037,7 +2038,7 @@ function roundRect(x, y, w, h, r) {
 function getDone() {
   try { return JSON.parse(localStorage.getItem("fd_done")) || {}; } catch { return {}; }
 }
-function saveProgress() { localStorage.setItem("fd_deaths", Game.deaths); }
+function saveProgress() { localStorage.setItem("fd_deaths", Game.deaths); window.dispatchEvent(new Event("gamezone:data-changed")); }
 function loadProgress() {
   let d = localStorage.getItem("fd_deaths");
   if (d === null) d = localStorage.getItem("ld_deaths"); // migrate from Level Devil
