@@ -84,7 +84,7 @@ let lane=1,obstacles=[],spawn=0,roadOffset=0,score=0,speed=15,elapsed=0,state="r
 function updateHud(){scoreEl.textContent=score;speedEl.textContent=(speed/15).toFixed(1)+"x";}
 function reset(){lane=1;obstacles=[];spawn=0.5;roadOffset=0;score=0;speed=15;elapsed=0;state="running";startScreen.classList.add("hidden");overScreen.classList.add("hidden");updateHud();}
 function move(delta){if(state!=="running")return;lane=Math.max(0,Math.min(2,lane+delta));}
-function end(){state="over";if(score>best){best=score;localStorage.setItem("gz_neon_racer_best",String(best));bestEl.textContent=best;}finalScoreEl.textContent=score;overScreen.classList.remove("hidden");}
+function end(){state="over";if(score>best){best=score;localStorage.setItem("gz_neon_racer_best",String(best));window.dispatchEvent(new Event("gamezone:data-changed"));bestEl.textContent=best;}finalScoreEl.textContent=score;overScreen.classList.remove("hidden");}
 function update(dt){elapsed+=dt;speed=Math.min(28,15+elapsed*0.48);roadOffset=(roadOffset+speed*dt)%6;spawn-=dt;if(spawn<=0){obstacles.push({lane:Math.floor(Math.random()*3),z:-48,passed:false});spawn=Math.max(0.72,1.22-elapsed*0.008)+(Math.random()*0.22);}for(const o of obstacles){o.z+=speed*dt;if(!o.passed&&o.z>5.2){o.passed=true;score+=10;scoreEl.textContent=score;}if(o.lane===lane&&Math.abs(o.z-3.8)<1.35){end();break;}}obstacles=obstacles.filter(o=>o.z<12);updateHud();}
 function render(){resize();gl.clearColor(0.025,0.04,0.085,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
 drawBox(0,-0.48,-28,10,0.55,76,[0.075,0.105,0.17]);
@@ -108,5 +108,6 @@ window.addEventListener("resize",resize);
 resize();requestAnimationFrame(loop);
 })();
 </script>
+<script type="module" src="../../assets/gamezone-cloud.js"></script>
 </body>
 </html>
