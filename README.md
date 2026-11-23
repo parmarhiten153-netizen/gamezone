@@ -33,6 +33,6 @@ The site is a static website and can be published with GitHub Pages from the rep
 
 - `login.html` provides Firebase email/password and Google sign-in.
 - `assets/firebase-config.js` contains the public Firebase web-app config placeholders. Add your own project values there.
-- `assets/gamezone-cloud.js` syncs favorites, recent games, and the best scores for Neon Racer 3D and Bike Rush 3D to each signed-in user's Firestore profile.
+- `assets/gamezone-cloud.js` syncs favorites, recent games, Neon Racer 3D and Bike Rush 3D best scores, and Level Devil completed levels/death count to each signed-in user's Firestore profile.
 - Publish the owner-only rules from `firestore.rules` before testing cloud sync.
 - Follow [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Until Firebase is configured, guest data remains local to the current browser.
