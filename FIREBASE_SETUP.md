@@ -1,28 +1,27 @@
 # GameZone Firebase setup
 
-This guide activates real email/password and Google sign-in for the existing `login.html` page.
+This connects real accounts and cloud sync for the GameZone profile. The site remains usable in guest mode before Firebase is configured.
 
 ## 1. Create a Firebase project
 
-1. Open https://console.firebase.google.com/
-2. Choose **Add project** and name it `GameZone`.
-3. After the project is ready, open **Project overview** and add a **Web app**.
-4. Register it as `GameZone Web`.
-5. Copy the `firebaseConfig` object shown by Firebase.
+1. Open https://console.firebase.google.com/.
+2. Select **Add project** and name it `GameZone`.
+3. After it is created, open **Project overview** and add a **Web app**.
+4. Register the app as `GameZone Web`.
+5. Copy the Firebase web configuration object.
 
-## 2. Add the web config
+## 2. Add the web configuration
 
-1. Open this repository's `login.html` file on GitHub.
-2. Find `const firebaseConfig = {...}`.
-3. Replace the four `YOUR_...` placeholder values with the matching values from your Firebase web app config.
-4. Keep the property names exactly as Firebase provides them. The Firebase web config is designed to be used in client-side web apps; do not paste service-account private keys or Admin SDK credentials here.
+1. Open this repository's `assets/firebase-config.js` file on GitHub.
+2. Replace the four placeholder values in `firebaseConfig`: `apiKey`, `authDomain`, `projectId`, and `appId`.
+3. Save the file.
 
-The login page checks that all four values are filled before initializing Firebase.
+Only use the normal Firebase **web app config** shown for your web app. Never paste a service-account JSON file, private key, Admin SDK credential, or user's password into this public repository. The web config is meant for browser apps; Firestore security rules still protect user data.
 
 ## 3. Enable sign-in methods
 
 1. In Firebase Console, open **Authentication**.
-2. Choose **Get started** if prompted.
+2. Select **Get started** if shown.
 3. Open **Sign-in method**.
 4. Enable **Email/Password** and save.
 5. Enable **Google**, choose a support email, and save.
@@ -33,44 +32,40 @@ In **Authentication → Settings → Authorized domains**, add:
 
 `parmarhiten153-netizen.github.io`
 
-The local preview domain is not needed for the public GitHub Pages site.
-
-## 5. Create the Firestore database
+## 5. Create Firestore and publish security rules
 
 1. Open **Firestore Database** in Firebase Console.
-2. Choose **Create database**.
-3. Select a region close to your expected users.
-4. Start in production mode.
-5. Open the **Rules** tab and use these owner-only rules:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, create, update, delete:
-        if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
-
+2. Select **Create database**.
+3. Choose a region and start in production mode.
+4. Open the **Rules** tab.
+5. Copy the contents of this repository's `firestore.rules` file into the Rules editor.
 6. Publish the rules.
 
-## What works after setup
+These rules let a signed-in player read and write only the document at `users/{their-own-uid}`.
 
-- Email/password account creation and login.
-- Google sign-in popup.
-- A per-user Firestore document at `users/{uid}` for the profile.
+## 6. Test it
 
-## What is not connected yet
+1. Wait for GitHub Pages to publish the latest commit.
+2. Open [GameZone](https://parmarhiten153-netizen.github.io/gamezone/).
+3. Add a game to Favorites and play a game once.
+4. Open **Login / Profile**, create an account, and confirm the profile page reports that cloud sync is connected.
+5. Sign in on another browser/device with the same account. Favorites, recent games, and supported best scores should sync after the profile loads.
 
-The current site stores favorites and recently played games in that browser's local storage. The profile page can display those local lists, but they are not yet synchronized to Firestore across devices. Cloud-synced favorites/history need the homepage to write changes to the signed-in user's document.
+## What the current cloud sync supports
 
-Individual game scores and levels can only sync when the game itself exposes a save/load mechanism. A third-party game opened on another website cannot automatically share its private progress with GameZone.
+- Email/password sign-up and login.
+- Google sign-in.
+- Per-user profile document at `users/{uid}`.
+- Favorites and recently played games.
+- Best scores for the original GameZone games **Neon Racer 3D** and **Bike Rush 3D**.
+- Local data is merged with cloud data on first sign-in. After that, changes are written to the signed-in user's Firestore document and remote updates are reflected on the device.
+
+## What does not sync yet
+
+Candy Match, Ludo, and Level Devil do not currently have a complete GameZone cloud save/load adapter. Their internal game progress should not be described as cloud-synced. A game's own save/load code must explicitly read and write its progress through the account system. Third-party games on another website cannot automatically share their private save data with GameZone.
 
 ## Safety notes
 
-- Never put Firebase service-account JSON, private keys, or Admin SDK credentials in this public repository.
-- Keep Firestore rules restricted to the signed-in user's own UID as shown above.
-- Do not collect or store users' passwords yourself. Firebase Authentication handles them.
+- Never commit Firebase service-account JSON, private keys, or Admin SDK credentials.
+- Keep the owner-only Firestore rules published.
+- Do not collect or store passwords yourself. Firebase Authentication handles passwords.
