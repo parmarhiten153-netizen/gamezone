@@ -25,12 +25,12 @@
 <p class="note">Real account login needs your Firebase web-app config. Until it is added, this page stays in guest mode. Never put a Firebase service-account private key here.</p>
 </section>
 <section class="card">
-<h2>Your gaming profile</h2><p class="sub">Your local gaming activity is shown below. Cloud sync is not active yet.</p>
-<div class="profile"><strong id="profileName">Guest player</strong><br>Favorite games: <strong id="favcount">0</strong><br>Recently played: <strong id="recentcount">0</strong><hr>
+<h2>Your gaming profile</h2><p class="sub">Favorites, recent games and supported progress appear here. Cloud sync starts after Firebase setup.</p>
+<div class="profile"><strong id="profileName">Guest player</strong><br><span id="cloudStatus" class="muted">Guest mode: this browser only.</span><br>Favorite games: <strong id="favcount">0</strong><br>Recently played: <strong id="recentcount">0</strong><hr>
 <strong>Favorites</strong><div class="list" id="favoriteNames"><span class="muted">No favorites saved yet.</span></div>
-<strong>Recently played</strong><div class="list" id="recentNames"><span class="muted">No games played yet.</span></div><strong>Best scores on this device</strong><div class="list" id="bestScores"><span class="muted">No scores saved yet.</span></div>
+<strong>Recently played</strong><div class="list" id="recentNames"><span class="muted">No games played yet.</span></div><strong>Best scores and supported progress</strong><div class="list" id="bestScores"><span class="muted">No scores saved yet.</span></div>
 </div>
-<h3>Progress saving</h3><p class="note">Favorites and recent games currently use this browser's local storage. Firebase can sync the profile after setup. Each game's score or level can sync only if that game has its own save/load code.</p>
+<h3>Progress saving</h3><p class="note">Favorites and recent games are saved locally for guests. After Firebase setup, favorites, recent games, Neon Racer and Bike Rush best scores, plus Level Devil completed levels and death count can sync. Other game progress needs its own save/load integration.</p>
 <p class="note"><a href="https://github.com/parmarhiten153-netizen/gamezone/blob/main/FIREBASE_SETUP.md" target="_blank" rel="noopener">Open the beginner Firebase setup guide</a></p>
 </section>
 </main>
@@ -47,6 +47,7 @@ const games={
 "level-devil":{name:"Level Devil",url:"level-devil.html"}
 };
 function read(key){try{return JSON.parse(localStorage.getItem(key)||"[]");}catch{return [];}}
+function readObject(key){try{const value=JSON.parse(localStorage.getItem(key)||"{}");return value&&typeof value==="object"&&!Array.isArray(value)?value:{};}catch{return {};}}
 function addLink(container,item){const a=document.createElement("a");a.href=item.url;a.textContent=item.name;container.appendChild(a);}
 function renderLocal(){
 const fav=read("gamezone_favorites").filter(id=>games[id]);
@@ -58,12 +59,12 @@ if(fav.length)fav.forEach(id=>addLink(favBox,games[id]));else favBox.textContent
 const recentBox=document.getElementById("recentNames");recentBox.replaceChildren();
 if(recent.length)recent.forEach(item=>addLink(recentBox,games[item.id]));else recentBox.textContent="No games played yet.";
 const scoreBox=document.getElementById("bestScores");scoreBox.replaceChildren();
-const scores=[["Neon Racer 3D",Number(localStorage.getItem("gz_neon_racer_best")||0)],["Bike Rush 3D",Number(localStorage.getItem("gz_bike_rush_best")||0)]].filter(item=>Number.isFinite(item[1])&&item[1]>0);
+const scores=[["Neon Racer 3D",Number(localStorage.getItem("gz_neon_racer_best")||0)],["Bike Rush 3D",Number(localStorage.getItem("gz_bike_rush_best")||0)]].filter(item=>Number.isFinite(item[1])&&item[1]>0);const completed=Object.values(readObject("fd_done")).filter(Boolean).length;const deaths=Number(localStorage.getItem("fd_deaths")||0);if(completed||deaths)scores.push(["Level Devil",completed+" levels · "+deaths+" deaths"]);
 if(scores.length){scores.forEach(([name,value])=>{const pill=document.createElement("span");pill.className="score-pill";pill.textContent=name+": "+value;scoreBox.appendChild(pill);});}else{scoreBox.textContent="No scores saved yet.";}
 }
 renderLocal();
 window.addEventListener("gamezone:cloud-updated",renderLocal);
-window.addEventListener("gamezone:cloud-status",event=>{if(event.detail&&event.detail.message)say(event.detail.message);});
+window.addEventListener("gamezone:cloud-status",event=>{if(event.detail&&event.detail.message){say(event.detail.message);const cloudStatus=document.getElementById("cloudStatus");if(cloudStatus)cloudStatus.textContent=event.detail.message;}});
 if(configured){
 onAuthStateChanged(auth,user=>{
 document.getElementById("logout").hidden=!user;
