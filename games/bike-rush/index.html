@@ -113,7 +113,7 @@ return g;
 function spawnCar(){const colors=[0xff5b68,0xffb347,0x5b8cff,0xe6e9ef];const car=makeCar(colors[Math.floor(Math.random()*colors.length)]);const li=Math.floor(Math.random()*3);car.position.set(laneX[li],0,-82);scene.add(car);obstacles.push({mesh:car,passed:false,lane:li});}
 function clearObstacles(){obstacles.forEach(o=>scene.remove(o.mesh));obstacles=[];}
 function updateHud(){scoreEl.textContent=Math.floor(score);speedEl.textContent=(speed/24).toFixed(1)+"x";}
-function endGame(){running=false;const final=Math.floor(score);finalScoreEl.textContent=final;if(final>best){best=final;localStorage.setItem("gz_bike_rush_best",String(best));bestEl.textContent=best;}overScreen.classList.remove("hidden");}
+function endGame(){running=false;const final=Math.floor(score);finalScoreEl.textContent=final;if(final>best){best=final;localStorage.setItem("gz_bike_rush_best",String(best));window.dispatchEvent(new Event("gamezone:data-changed"));bestEl.textContent=best;}overScreen.classList.remove("hidden");}
 function startGame(){clearObstacles();lane=1;targetLane=1;bike.position.x=0;bike.rotation.z=0;score=0;speed=24;spawnTimer=.5;lastTime=performance.now();updateHud();startScreen.classList.add("hidden");overScreen.classList.add("hidden");running=true;}
 function changeLane(dir){if(!running)return;targetLane=Math.max(0,Math.min(2,targetLane+dir));}
 function resize(){if(!renderer)return;const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
@@ -144,5 +144,6 @@ renderer.render(scene,camera);
 requestAnimationFrame(animate);
 })();
 </script>
+<script type="module" src="../../assets/gamezone-cloud.js"></script>
 </body>
 </html>
