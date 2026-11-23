@@ -35,11 +35,9 @@
 </section>
 </main>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig={apiKey:"YOUR_FIREBASE_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT_ID",appId:"YOUR_FIREBASE_APP_ID"};
-const configured=Object.values(firebaseConfig).every(value=>typeof value==="string"&&value&&!value.startsWith("YOUR_"));
+import { auth, db, firebaseConfigured as configured } from "./assets/gamezone-cloud.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const status=document.getElementById("status");
 const say=message=>{status.textContent=message;};
 const games={
@@ -65,9 +63,7 @@ const scores=[["Neon Racer 3D",Number(localStorage.getItem("gz_neon_racer_best")
 if(scores.length){scores.forEach(([name,value])=>{const pill=document.createElement("span");pill.className="score-pill";pill.textContent=name+": "+value;scoreBox.appendChild(pill);});}else{scoreBox.textContent="No scores saved yet.";}
 }
 renderLocal();
-let auth=null,db=null;
 if(configured){
-const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);
 onAuthStateChanged(auth,async user=>{
 document.getElementById("logout").hidden=!user;
 document.getElementById("profileName").textContent=user?"Signed in as "+(user.displayName||user.email):"Guest player";
