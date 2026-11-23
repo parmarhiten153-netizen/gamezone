@@ -12,7 +12,9 @@ export let db = null;
 const validIds = new Set(["neon-racer", "bike-rush", "candy-match", "ludo", "level-devil"]);
 const scoreKeys = {
   neonRacer: "gz_neon_racer_best",
-  bikeRush: "gz_bike_rush_best"
+  bikeRush: "gz_bike_rush_best",
+  levelDevilDone: "fd_done",
+  levelDevilDeaths: "fd_deaths"
 };
 let activeUser = null;
 let stopSnapshot = null;
@@ -30,6 +32,30 @@ function readArray(key) {
 function readScore(key) {
   const value = Number(localStorage.getItem(key) || 0);
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
+function readObject(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  } catch {
+    return {};
+  }
+}
+function cleanLevelDevil(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const completed = {};
+  for (const [key, done] of Object.entries(source.completed || {})) {
+    if (done === true) completed[key] = true;
+  }
+  return { completed, deaths: Math.max(0, Math.floor(Number(source.deaths) || 0)) };
+}
+function mergeLevelDevil(a, b) {
+  const left = cleanLevelDevil(a);
+  const right = cleanLevelDevil(b);
+  return {
+    completed: { ...left.completed, ...right.completed },
+    deaths: Math.max(left.deaths, right.deaths)
+  };
 }
 function cleanFavorites(value) {
   return [...new Set((Array.isArray(value) ? value : []).filter(id => validIds.has(id)))];
@@ -58,6 +84,10 @@ function localState() {
     bestScores: {
       neonRacer: readScore(scoreKeys.neonRacer),
       bikeRush: readScore(scoreKeys.bikeRush)
+    },
+    levelDevil: {
+      completed: readObject(scoreKeys.levelDevilDone),
+      deaths: readScore(scoreKeys.levelDevilDeaths)
     }
   };
 }
@@ -78,6 +108,9 @@ function applyToDevice(data) {
   const scores = cleanScores(data.bestScores);
   localStorage.setItem(scoreKeys.neonRacer, String(scores.neonRacer));
   localStorage.setItem(scoreKeys.bikeRush, String(scores.bikeRush));
+  const levelDevil = cleanLevelDevil(data.levelDevil);
+  localStorage.setItem(scoreKeys.levelDevilDone, JSON.stringify(levelDevil.completed));
+  localStorage.setItem(scoreKeys.levelDevilDeaths, String(levelDevil.deaths));
   window.dispatchEvent(new CustomEvent("gamezone:cloud-updated"));
 }
 function notifyStatus(connected, message) {
@@ -93,7 +126,8 @@ async function initialMerge(user) {
   const merged = {
     favorites: cleanFavorites([...(remote.favorites || []), ...local.favorites]),
     recentGames: mergeRecent(remote.recentGames, local.recentGames),
-    bestScores: mergeScores(remote.bestScores, local.bestScores)
+    bestScores: mergeScores(remote.bestScores, local.bestScores),
+    levelDevil: mergeLevelDevil(remote.levelDevil, local.levelDevil)
   };
   await setDoc(ref, {
     displayName: user.displayName || remote.displayName || "",
@@ -121,7 +155,8 @@ async function syncDeviceChanges() {
       const merged = {
         favorites: hasLocalFavorites ? local.favorites : cleanFavorites(remote.favorites),
         recentGames: mergeRecent(remote.recentGames, local.recentGames),
-        bestScores: mergeScores(remote.bestScores, local.bestScores)
+        bestScores: mergeScores(remote.bestScores, local.bestScores),
+        levelDevil: mergeLevelDevil(remote.levelDevil, local.levelDevil)
       };
       await setDoc(ref, {
         displayName: activeUser.displayName || remote.displayName || "",
@@ -172,7 +207,7 @@ if (firebaseConfigured) {
 
   window.addEventListener("gamezone:data-changed", syncDeviceChanges);
   window.addEventListener("storage", event => {
-    if (["gamezone_favorites", "gamezone_recent", scoreKeys.neonRacer, scoreKeys.bikeRush].includes(event.key)) {
+    if (["gamezone_favorites", "gamezone_recent", scoreKeys.neonRacer, scoreKeys.bikeRush, scoreKeys.levelDevilDone, scoreKeys.levelDevilDeaths].includes(event.key)) {
       syncDeviceChanges();
     }
   });
