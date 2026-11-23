@@ -27,3 +27,12 @@ Favorites, recently played games, and the Neon Racer and Bike Rush best scores c
 ## Deploy
 
 The site is a static website and can be published with GitHub Pages from the repository's configured branch/folder.
+
+
+## Account and cloud sync
+
+- `login.html` provides Firebase email/password and Google sign-in.
+- `assets/firebase-config.js` contains the public Firebase web-app config placeholders. Add your own project values there.
+- `assets/gamezone-cloud.js` syncs favorites, recent games, and the best scores for Neon Racer 3D and Bike Rush 3D to each signed-in user's Firestore profile.
+- Publish the owner-only rules from `firestore.rules` before testing cloud sync.
+- Follow [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Until Firebase is configured, guest data remains local to the current browser.
