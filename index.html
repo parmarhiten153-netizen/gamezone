@@ -40,7 +40,7 @@ const catalog={
 "level-devil":{name:"Level Devil",url:"level-devil.html"}
 };
 function read(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch{return []}}
-function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
+function write(key,value){localStorage.setItem(key,JSON.stringify(value));window.dispatchEvent(new Event("gamezone:data-changed"));}
 function recordPlay(id){if(!catalog[id])return;const list=read("gamezone_recent").filter(x=>x.id!==id);list.unshift({id,at:Date.now()});write("gamezone_recent",list.slice(0,12));}
 function renderLists(){
 const recent=read("gamezone_recent").filter(x=>catalog[x.id]);
@@ -61,6 +61,8 @@ document.querySelectorAll(".game").forEach(card=>{const show=card.dataset.name.i
 document.getElementById("gameCount").textContent=visible+" games";
 });
 renderLists();
+window.addEventListener("gamezone:cloud-updated",renderLists);
 </script>
+<script type="module" src="assets/gamezone-cloud.js"></script>
 </body>
 </html>
