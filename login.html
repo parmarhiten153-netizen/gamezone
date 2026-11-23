@@ -37,7 +37,6 @@
 <script type="module">
 import { auth, db, firebaseConfigured as configured } from "./assets/gamezone-cloud.js";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const status=document.getElementById("status");
 const say=message=>{status.textContent=message;};
 const games={
@@ -63,11 +62,13 @@ const scores=[["Neon Racer 3D",Number(localStorage.getItem("gz_neon_racer_best")
 if(scores.length){scores.forEach(([name,value])=>{const pill=document.createElement("span");pill.className="score-pill";pill.textContent=name+": "+value;scoreBox.appendChild(pill);});}else{scoreBox.textContent="No scores saved yet.";}
 }
 renderLocal();
+window.addEventListener("gamezone:cloud-updated",renderLocal);
+window.addEventListener("gamezone:cloud-status",event=>{if(event.detail&&event.detail.message)say(event.detail.message);});
 if(configured){
-onAuthStateChanged(auth,async user=>{
+onAuthStateChanged(auth,user=>{
 document.getElementById("logout").hidden=!user;
 document.getElementById("profileName").textContent=user?"Signed in as "+(user.displayName||user.email):"Guest player";
-if(user){try{const ref=doc(db,"users",user.uid);const snap=await getDoc(ref);if(!snap.exists())await setDoc(ref,{displayName:user.displayName||"",email:user.email,favorites:[],recentGames:[],createdAt:Date.now()},{merge:true});say("You are signed in. Cloud profile is connected.");}catch(error){say("Signed in, but profile could not load: "+error.message);}}
+if(user)say("Signed in. Syncing your GameZone profile and supported scores.");
 });
 }else{
 say("Firebase is not connected yet. Guest mode works; add the Firebase web config to activate real accounts.");
