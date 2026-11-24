@@ -122,7 +122,15 @@ async function initialMerge(user) {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
   const remote = snap.exists() ? snap.data() : {};
-  const local = localState();
+  // Never merge one signed-in player's cached device data into another player's account.
+  const previousUid = localStorage.getItem("gamezone_active_uid");
+  const mayMergeDeviceData = !previousUid || previousUid === user.uid;
+  const local = mayMergeDeviceData ? localState() : {
+    favorites: [],
+    recentGames: [],
+    bestScores: { neonRacer: 0, bikeRush: 0 },
+    levelDevil: { completed: {}, deaths: 0 }
+  };
   const merged = {
     favorites: cleanFavorites([...(remote.favorites || []), ...local.favorites]),
     recentGames: mergeRecent(remote.recentGames, local.recentGames),
@@ -136,9 +144,11 @@ async function initialMerge(user) {
     updatedAt: serverTimestamp()
   }, { merge: true });
   applyToDevice(merged);
+  localStorage.setItem("gamezone_active_uid", user.uid);
 }
 async function syncDeviceChanges() {
   if (!activeUser || !db) return;
+  if (localStorage.getItem("gamezone_active_uid") !== activeUser.uid) return;
   if (syncRunning) {
     syncQueued = true;
     return;
