@@ -13,6 +13,7 @@ const validIds = new Set(["neon-racer", "bike-rush", "candy-match", "ludo", "lev
 const scoreKeys = {
   neonRacer: "gz_neon_racer_best",
   bikeRush: "gz_bike_rush_best",
+  candyMatch: "gz_candy_match_best",
   levelDevilDone: "fd_done",
   levelDevilDeaths: "fd_deaths"
 };
@@ -74,7 +75,8 @@ function cleanScores(value) {
   const source = value && typeof value === "object" ? value : {};
   return {
     neonRacer: Math.max(0, Math.floor(Number(source.neonRacer) || 0)),
-    bikeRush: Math.max(0, Math.floor(Number(source.bikeRush) || 0))
+    bikeRush: Math.max(0, Math.floor(Number(source.bikeRush) || 0)),
+    candyMatch: Math.max(0, Math.floor(Number(source.candyMatch) || 0))
   };
 }
 function localState() {
@@ -83,7 +85,8 @@ function localState() {
     recentGames: cleanRecent(readArray("gamezone_recent")),
     bestScores: {
       neonRacer: readScore(scoreKeys.neonRacer),
-      bikeRush: readScore(scoreKeys.bikeRush)
+      bikeRush: readScore(scoreKeys.bikeRush),
+      candyMatch: readScore(scoreKeys.candyMatch)
     },
     levelDevil: {
       completed: readObject(scoreKeys.levelDevilDone),
@@ -99,7 +102,8 @@ function mergeScores(a, b) {
   const right = cleanScores(b);
   return {
     neonRacer: Math.max(left.neonRacer, right.neonRacer),
-    bikeRush: Math.max(left.bikeRush, right.bikeRush)
+    bikeRush: Math.max(left.bikeRush, right.bikeRush),
+    candyMatch: Math.max(left.candyMatch, right.candyMatch)
   };
 }
 function applyToDevice(data) {
@@ -108,6 +112,7 @@ function applyToDevice(data) {
   const scores = cleanScores(data.bestScores);
   localStorage.setItem(scoreKeys.neonRacer, String(scores.neonRacer));
   localStorage.setItem(scoreKeys.bikeRush, String(scores.bikeRush));
+  localStorage.setItem(scoreKeys.candyMatch, String(scores.candyMatch));
   const levelDevil = cleanLevelDevil(data.levelDevil);
   localStorage.setItem(scoreKeys.levelDevilDone, JSON.stringify(levelDevil.completed));
   localStorage.setItem(scoreKeys.levelDevilDeaths, String(levelDevil.deaths));
@@ -217,7 +222,7 @@ if (firebaseConfigured) {
 
   window.addEventListener("gamezone:data-changed", syncDeviceChanges);
   window.addEventListener("storage", event => {
-    if (["gamezone_favorites", "gamezone_recent", scoreKeys.neonRacer, scoreKeys.bikeRush, scoreKeys.levelDevilDone, scoreKeys.levelDevilDeaths].includes(event.key)) {
+    if (["gamezone_favorites", "gamezone_recent", scoreKeys.neonRacer, scoreKeys.bikeRush, scoreKeys.candyMatch, scoreKeys.levelDevilDone, scoreKeys.levelDevilDeaths].includes(event.key)) {
       syncDeviceChanges();
     }
   });
