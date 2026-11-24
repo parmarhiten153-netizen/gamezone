@@ -57,13 +57,13 @@ These rules let a signed-in player read and write only the document at `users/{t
 - Google sign-in.
 - Per-user profile document at `users/{uid}`.
 - Favorites and recently played games.
-- Best scores for the original GameZone games **Neon Racer 3D** and **Bike Rush 3D**.
+- Best scores for the original GameZone games **Neon Racer 3D** and **Bike Rush 3D**, plus the **Candy Match** mini-game.
 - **Level Devil** completed-level flags and death count.
 - Local data is merged with cloud data on first sign-in. After that, changes are written to the signed-in user's Firestore document and remote updates are reflected on the device.
 
 ## What does not sync yet
 
-Candy Match and Ludo do not currently have a complete GameZone cloud save/load adapter. Their internal game progress should not be described as cloud-synced. A game's own save/load code must explicitly read and write its progress through the account system. Third-party games on another website cannot automatically share their private save data with GameZone.
+Ludo does not currently have a complete GameZone cloud save/load adapter. Candy Match's best score syncs, but its active board and current move state do not. Their internal game progress should not be described as cloud-synced. A game's own save/load code must explicitly read and write its progress through the account system. Third-party games on another website cannot automatically share their private save data with GameZone.
 
 ## Safety notes
 
