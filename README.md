@@ -22,7 +22,7 @@ Neon Racer 3D and Bike Rush 3D are original GameZone games. They are not Play St
 
 ## Local player data
 
-Favorites, recently played games, and the Neon Racer and Bike Rush best scores currently use browser local storage. They stay on the current browser/device. Firebase Authentication and Firestore setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Account login does not automatically sync a game's score: each game needs its own save/load integration.
+Favorites, recently played games, and the Neon Racer, Bike Rush, and Candy Match best scores currently use browser local storage. They stay on the current browser/device. Firebase Authentication and Firestore setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Account login does not automatically sync a game's score: each game needs its own save/load integration.
 
 ## Deploy
 
@@ -33,6 +33,6 @@ The site is a static website and can be published with GitHub Pages from the rep
 
 - `login.html` provides Firebase email/password and Google sign-in.
 - `assets/firebase-config.js` contains the public Firebase web-app config placeholders. Add your own project values there.
-- `assets/gamezone-cloud.js` syncs favorites, recent games, Neon Racer 3D and Bike Rush 3D best scores, and Level Devil completed levels/death count to each signed-in user's Firestore profile.
+- `assets/gamezone-cloud.js` syncs favorites, recent games, Neon Racer 3D, Bike Rush 3D, and Candy Match best scores, plus Level Devil completed levels/death count, to each signed-in user's Firestore profile.
 - Publish the owner-only rules from `firestore.rules` before testing cloud sync.
 - Follow [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Until Firebase is configured, guest data remains local to the current browser.
