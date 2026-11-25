@@ -21,6 +21,70 @@ let activeUser = null;
 let stopSnapshot = null;
 let syncRunning = false;
 let syncQueued = false;
+let resolveAuthReady;
+export const authReady = new Promise(resolve => { resolveAuthReady = resolve; });
+const progressIds = new Set(["ludo"]);
+
+function progressStorageKey(gameId, uid) {
+  return "gamezone_save_" + gameId + "_" + (uid || "guest");
+}
+
+function parseProgress(raw) {
+  try {
+    const value = JSON.parse(raw || "null");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveGameProgress(gameId, progress) {
+  if (!progressIds.has(gameId)) throw new Error("Unsupported game save.");
+  const user = auth && auth.currentUser ? auth.currentUser : null;
+  const key = progressStorageKey(gameId, user ? user.uid : null);
+  const clean = JSON.parse(JSON.stringify(progress));
+  clean.savedAt = Number(clean.savedAt) || Date.now();
+  localStorage.setItem(key, JSON.stringify(clean));
+
+  if (!user || !db) return { local: true, cloud: false };
+  try {
+    await setDoc(doc(db, "users", user.uid), {
+      gameSaves: { [gameId]: clean },
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    return { local: true, cloud: true };
+  } catch (error) {
+    console.error("GameZone game save failed:", error);
+    notifyStatus(false, "Saved on this device. Cloud save failed: " + error.message);
+    return { local: true, cloud: false, error: error.message };
+  }
+}
+
+export async function loadGameProgress(gameId) {
+  if (!progressIds.has(gameId)) throw new Error("Unsupported game save.");
+  const user = auth && auth.currentUser ? auth.currentUser : null;
+  const key = progressStorageKey(gameId, user ? user.uid : null);
+  const local = parseProgress(localStorage.getItem(key));
+
+  if (!user || !db) return local;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    const remote = snap.exists() ? parseProgress(snap.data().gameSaves?.[gameId] ? JSON.stringify(snap.data().gameSaves[gameId]) : null) : null;
+    if (remote && (!local || (Number(remote.savedAt) || 0) >= (Number(local.savedAt) || 0))) {
+      localStorage.setItem(key, JSON.stringify(remote));
+      return remote;
+    }
+    if (local) {
+      await saveGameProgress(gameId, local);
+      return local;
+    }
+    return null;
+  } catch (error) {
+    console.error("GameZone game load failed:", error);
+    notifyStatus(false, "Could not load cloud save. Checking this device instead.");
+    return local;
+  }
+}
 
 function readArray(key) {
   try {
@@ -195,6 +259,7 @@ if (firebaseConfigured) {
   db = getFirestore(app);
 
   onAuthStateChanged(auth, async user => {
+    if (resolveAuthReady) { resolveAuthReady(user); resolveAuthReady = null; }
     activeUser = user;
     if (stopSnapshot) {
       stopSnapshot();
@@ -227,6 +292,7 @@ if (firebaseConfigured) {
     }
   });
 } else {
+  if (resolveAuthReady) { resolveAuthReady(null); resolveAuthReady = null; }
   console.info("GameZone cloud sync is waiting for Firebase web config in assets/firebase-config.js.");
   notifyStatus(false, "Firebase setup is pending. Local game data still works.");
 }
