@@ -12,7 +12,7 @@ A small browser-game website hosted with GitHub Pages.
 | Ludo | Local four-player board game | `ludo.html` |
 | Level Devil | Canvas platformer | `level-devil.html` |
 
-All game cards on the homepage open pages on the GameZone site. The homepage does not send players to Poki, Gamebiz, or another game portal.
+All five game cards on the homepage open pages on the GameZone site. The homepage does not send players to Poki, Gamebiz, or another game portal.
 
 ## Important note about Play Store titles
 
@@ -22,7 +22,7 @@ Neon Racer 3D and Bike Rush 3D are original GameZone games. They are not Play St
 
 ## Local player data
 
-Favorites, recently played games, and the Neon Racer, Bike Rush, and Candy Match best scores currently use browser local storage. They stay on the current browser/device. Firebase Authentication and Firestore setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Account login does not automatically sync a game's score: each game needs its own save/load integration.
+Guest favorites, recent games, and supported game progress are stored in browser local storage. After Firebase is configured, favorites, recent games, supported scores, Level Devil progress, and the Ludo board save can sync to the signed-in player's Firestore profile. Firebase setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Each game still needs its own save/load integration.
 
 ## Deploy
 
