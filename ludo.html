@@ -1,15 +1,241 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ludo | GameZone</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f4f6ff;font-family:Arial;color:#222}.top{padding:15px 5%;background:#fff;display:flex;justify-content:space-between;font-weight:800}.top a{color:#5145df;text-decoration:none}.wrap{max-width:760px;margin:20px auto;padding:14px;text-align:center}.board{display:grid;grid-template-columns:repeat(11,1fr);gap:3px;max-width:520px;margin:16px auto;background:#fff;padding:8px;border-radius:18px;box-shadow:0 8px 28px #18234b18}.cell{aspect-ratio:1;border-radius:6px;background:#f0f1f7;display:flex;align-items:center;justify-content:center;font-size:clamp(9px,2.4vw,17px);position:relative}.home{font-size:clamp(8px,2vw,14px);font-weight:900}.token{border:0;border-radius:50%;width:80%;height:80%;font-size:clamp(9px,2vw,15px);font-weight:900;color:white;cursor:pointer;box-shadow:inset 0 -3px #0003,0 2px 4px #0002}.red{background:#ee424c}.green{background:#27b66a}.yellow{background:#f4c542;color:#473500}.blue{background:#4386ed}.controls{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}.dice{font-size:36px;background:#fff;border:2px solid #ddd;border-radius:14px;padding:8px 18px;cursor:pointer}.action{border:0;background:#5145df;color:#fff;padding:12px 20px;border-radius:12px;font-weight:800;cursor:pointer}.status{font-weight:800;margin:12px}.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;font-size:13px}
-</style></head><body><div class="top"><a href="index.html">← GAMEZONE</a><span>🎲 LUDO</span><span>4 PLAYERS</span></div><div class="wrap"><h1>Classic Ludo</h1><p>Four players, take turns. Roll a 6 to bring a token out. First to finish wins.</p><div class="legend"><span>🔴 Red</span><span>🟢 Green</span><span>🟡 Yellow</span><span>🔵 Blue</span></div><div class="board" id="board"></div><div class="controls"><button class="dice" id="dice" onclick="roll()">🎲</button><button class="action" onclick="reset()">New Game</button></div><div class="status" id="status">Red player's turn. Roll the dice!</div><p style="font-size:13px;color:#777">Local pass-and-play for 4 players. Tap a highlighted token after rolling.</p></div><script>
-const colors=['red','green','yellow','blue'],names=['Red','Green','Yellow','Blue'],starts=[0,13,26,39],safe=[0,8,13,21,26,34,39,47],track=[];for(let x=1;x<=9;x++)track.push([x,0]);for(let y=1;y<=9;y++)track.push([10,y]);for(let x=9;x>=1;x--)track.push([x,10]);for(let y=9;y>=1;y--)track.push([0,y]); // perimeter 36 cells
-const route=[];for(let i=0;i<52;i++){let p=track[Math.floor(i*36/52)];route.push(p)}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f6ff">
+<title>Ludo | GameZone</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6ff;font-family:Arial,Helvetica,sans-serif;color:#222}
+.top{padding:15px 5%;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:800}
+.top a{color:#5145df;text-decoration:none}
+.wrap{max-width:800px;margin:20px auto;padding:14px;text-align:center}
+.board{display:grid;grid-template-columns:repeat(11,1fr);gap:3px;max-width:520px;margin:16px auto;background:#fff;padding:8px;border-radius:18px;box-shadow:0 8px 28px #18234b18}
+.cell{aspect-ratio:1;border-radius:6px;background:#f0f1f7;display:flex;align-items:center;justify-content:center;font-size:clamp(9px,2.4vw,17px);position:relative;overflow:hidden}
+.home{font-size:clamp(8px,2vw,14px);font-weight:900}
+.token{border:0;border-radius:50%;width:80%;height:80%;font-size:clamp(9px,2vw,15px);font-weight:900;color:white;cursor:pointer;box-shadow:inset 0 -3px #0003,0 2px 4px #0002;padding:0}
+.red{background:#ee424c}.green{background:#27b66a}.yellow{background:#f4c542;color:#473500}.blue{background:#4386ed}
+.controls{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.dice{font-size:32px;background:#fff;border:2px solid #ddd;border-radius:14px;padding:7px 17px;cursor:pointer}
+.action{border:0;background:#5145df;color:#fff;padding:12px 17px;border-radius:12px;font-weight:800;cursor:pointer}
+.action.secondary{background:#e8eaff;color:#5145df}
+.action:disabled{opacity:.45;cursor:not-allowed}
+.status{font-weight:800;margin:12px;min-height:24px}
+.save-status{font-size:13px;color:#667085;min-height:20px}
+.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;font-size:13px}
+.hint{font-size:13px;color:#777;line-height:1.5}
+@media(max-width:560px){.top{padding:13px 14px;font-size:13px}.wrap{padding:8px}.board{gap:2px;padding:5px}.controls{gap:7px}.action{padding:11px 12px}}
+</style>
+</head>
+<body>
+<header class="top"><a href="index.html">← GAMEZONE</a><span>🎲 LUDO</span><span>4 PLAYERS</span></header>
+<main class="wrap">
+<h1>Classic Ludo</h1>
+<p>Four players, take turns. Roll a 6 to bring a token out. First to finish wins.</p>
+<div class="legend"><span>🔴 Red</span><span>🟢 Green</span><span>🟡 Yellow</span><span>🔵 Blue</span></div>
+<div class="board" id="board" aria-label="Ludo board"></div>
+<div class="controls">
+<button class="dice" id="dice" type="button" aria-label="Roll dice">🎲</button>
+<button class="action" id="save" type="button">Save Game</button>
+<button class="action secondary" id="resume" type="button" disabled>Resume Saved</button>
+<button class="action secondary" id="new" type="button">New Game</button>
+</div>
+<div class="status" id="status" aria-live="polite">Loading saved game…</div>
+<div class="save-status" id="saveStatus">Your game saves automatically on this device.</div>
+<p class="hint">Local pass-and-play for 4 players. Tap a highlighted token after rolling. Sign in to GameZone to sync this Ludo save across devices after Firebase is configured.</p>
+</main>
+<script type="module">
+import { authReady, loadGameProgress, saveGameProgress } from "./assets/gamezone-cloud.js";
+
+const colors=['red','green','yellow','blue'];
+const names=['Red','Green','Yellow','Blue'];
+const starts=[0,13,26,39];
+const safe=[0,8,13,21,26,34,39,47];
+const track=[];
+for(let x=1;x<=9;x++)track.push([x,0]);
+for(let y=1;y<=9;y++)track.push([10,y]);
+for(let x=9;x>=1;x--)track.push([x,10]);
+for(let y=9;y>=1;y--)track.push([0,y]);
+const route=[];
+for(let i=0;i<52;i++)route.push(track[Math.floor(i*36/52)]);
+
 let turn=0,dice=0,tokens=colors.map(()=>[-1,-1,-1,-1]),finished=colors.map(()=>0),rolled=false;
+let savedAvailable=false;
 const board=document.getElementById('board');
-function reset(){turn=0;dice=0;tokens=colors.map(()=>[-1,-1,-1,-1]);finished=colors.map(()=>0);rolled=false;draw();msg('Red player turn. Roll the dice!')}
-function msg(t){document.getElementById('status').textContent=t}
-function roll(){if(rolled)return;dice=1+Math.floor(Math.random()*6);rolled=true;document.getElementById('dice').textContent=['⚀','⚁','⚂','⚃','⚄','⚅'][dice-1];let movable=tokens[turn].map((p,i)=>(p===-1&&dice===6)||(p>=0&&p<56-dice)?i:-1).filter(i=>i>=0);draw();if(!movable.length){msg(names[turn]+' rolled '+dice+'. No move, next player.');setTimeout(next,900)}else msg(names[turn]+' rolled '+dice+'. Tap a glowing token.')}
-function next(){rolled=false;dice=0;turn=(turn+1)%4;document.getElementById('dice').textContent='🎲';draw();msg(names[turn]+' player turn. Roll the dice!')}
-function move(c,i){if(c!==turn||!rolled)return;let p=tokens[c][i];if(p===-1){if(dice!==6)return;tokens[c][i]=0}else{tokens[c][i]=p+dice}let np=tokens[c][i];if(np>=56){tokens[c][i]=56;finished[c]++}if(np<52){let abs=(starts[c]+np)%52;if(!safe.includes(abs)){for(let oc=0;oc<4;oc++)if(oc!==c)tokens[oc].forEach((v,j)=>{if(v>=0&&v<52&&(starts[oc]+v)%52===abs)tokens[oc][j]=-1})}}let again=dice===6;rolled=false;dice=0;document.getElementById('dice').textContent='🎲';if(finished[c]===4){draw();msg(names[c]+' wins! 🎉');return}if(!again)turn=(turn+1)%4;draw();msg(again?names[c]+' rolled a 6! Roll again.':names[turn]+' player turn. Roll the dice!')}
-function draw(){board.innerHTML='';let coords={};route.forEach((p,i)=>coords[p.join(',')]=i);for(let y=0;y<11;y++)for(let x=0;x<11;x++){let d=document.createElement('div');d.className='cell';let at=route.findIndex(p=>p[0]===x&&p[1]===y);if(at>=0){d.style.background=safe.includes(at)?'#fff1c9':'#e9edf7';d.textContent='·';for(let c=0;c<4;c++)tokens[c].forEach((v,j)=>{if(v>=0&&v<52&&(starts[c]+v)%52===at){let b=document.createElement('button');b.className='token '+colors[c];b.textContent=j+1;b.onclick=()=>move(c,j);if(c===turn&&rolled&&((v===-1&&dice===6)||(v>=0&&v<56-dice)))b.style.outline='4px solid #222';d.appendChild(b)}})}else if((x<4&&y<4)||(x>6&&y<4)||(x<4&&y>6)||(x>6&&y>6)){let c=x<4?(y<4?0:3):(y<4?1:2);d.className='cell home';d.style.background=['#ffdfe1','#dff8e9','#fff4c9','#dceaff'][c];d.textContent=['🔴','🟢','🟡','🔵'][c]+' '+finished[c]+'/4';let homeAt=[(x===1&&y===1),(x===9&&y===1),(x===9&&y===9),(x===1&&y===9)][c];if(homeAt){d.textContent='';for(let j=0;j<4;j++){let b=document.createElement('button');b.className='token '+colors[c];b.textContent=j+1;b.onclick=()=>move(c,j);if(c===turn&&rolled&&dice===6&&tokens[c][j]===-1)b.style.outline='4px solid #222';d.appendChild(b)}}}board.appendChild(d)}}
-reset();
-</script></body></html>
+const diceButton=document.getElementById('dice');
+const statusBox=document.getElementById('status');
+const saveStatus=document.getElementById('saveStatus');
+const resumeButton=document.getElementById('resume');
+const diceFaces=['⚀','⚁','⚂','⚃','⚄','⚅'];
+
+function msg(text){statusBox.textContent=text;}
+function setSaveStatus(text){saveStatus.textContent=text;}
+function snapshot(){
+  return {version:1,turn,dice,rolled,tokens:tokens.map(row=>row.slice()),finished:finished.slice(),savedAt:Date.now()};
+}
+function validSave(s){
+  return !!s && s.version===1 &&
+    Number.isInteger(s.turn) && s.turn>=0 && s.turn<4 &&
+    Number.isInteger(s.dice) && s.dice>=0 && s.dice<=6 &&
+    typeof s.rolled==='boolean' &&
+    Array.isArray(s.tokens) && s.tokens.length===4 &&
+    s.tokens.every(row=>Array.isArray(row)&&row.length===4&&row.every(v=>Number.isInteger(v)&&v>=-1&&v<=56)) &&
+    Array.isArray(s.finished) && s.finished.length===4 &&
+    s.finished.every(v=>Number.isInteger(v)&&v>=0&&v<=4) &&
+    (!s.rolled || s.dice>=1);
+}
+function applySave(s){
+  turn=s.turn;dice=s.dice;rolled=s.rolled;
+  tokens=s.tokens.map(row=>row.slice());
+  finished=s.finished.slice();
+  diceButton.textContent=rolled?diceFaces[dice-1]:'🎲';
+  draw();
+}
+let saveQueue=Promise.resolve();
+function persistGame(manual=false){
+  const data=snapshot();
+  saveQueue=saveQueue.then(async()=>{
+    try{
+      const result=await saveGameProgress('ludo',data);
+      resumeButton.disabled=false;
+      savedAvailable=true;
+      setSaveStatus(result.cloud?'Saved to this device and your GameZone account.':'Saved on this device. Sign in and configure Firebase for cloud sync.');
+      if(manual)msg(result.cloud?'Ludo game saved to your account.':'Ludo game saved on this device.');
+    }catch(error){
+      console.error('Could not save Ludo:',error);
+      setSaveStatus('Save failed: '+error.message);
+      if(manual)msg('Could not save this game. Please try again.');
+    }
+  });
+  return saveQueue;
+}
+function reset(){
+  turn=0;dice=0;tokens=colors.map(()=>[-1,-1,-1,-1]);finished=colors.map(()=>0);rolled=false;
+  diceButton.textContent='🎲';draw();msg('Red player turn. Roll the dice!');
+  persistGame(false);
+}
+function movableTokens(){
+  return tokens[turn].map((p,i)=>(p===-1&&dice===6)||(p>=0&&p<56-dice)?i:-1).filter(i=>i>=0);
+}
+function next(){
+  rolled=false;dice=0;turn=(turn+1)%4;diceButton.textContent='🎲';draw();
+  msg(names[turn]+' player turn. Roll the dice!');
+  persistGame(false);
+}
+function roll(){
+  if(rolled)return;
+  dice=1+Math.floor(Math.random()*6);rolled=true;
+  diceButton.textContent=diceFaces[dice-1];
+  const movable=movableTokens();
+  draw();
+  persistGame(false);
+  if(!movable.length){
+    msg(names[turn]+' rolled '+dice+'. No move, next player.');
+    setTimeout(next,900);
+  }else{
+    msg(names[turn]+' rolled '+dice+'. Tap a glowing token.');
+  }
+}
+function move(c,i){
+  if(c!==turn||!rolled)return;
+  const p=tokens[c][i];
+  if(p===-1){if(dice!==6)return;tokens[c][i]=0;}
+  else{if(p>=56-dice)return;tokens[c][i]=p+dice;}
+  const np=tokens[c][i];
+  if(np===56)finished[c]++;
+  if(np<52){
+    const abs=(starts[c]+np)%52;
+    if(!safe.includes(abs)){
+      for(let oc=0;oc<4;oc++)if(oc!==c){
+        tokens[oc].forEach((v,j)=>{
+          if(v>=0&&v<52&&(starts[oc]+v)%52===abs)tokens[oc][j]=-1;
+        });
+      }
+    }
+  }
+  const again=dice===6;
+  rolled=false;dice=0;diceButton.textContent='🎲';
+  if(finished[c]===4){
+    draw();msg(names[c]+' wins! 🎉');persistGame(false);return;
+  }
+  if(!again)turn=(turn+1)%4;
+  draw();
+  msg(again?names[c]+' rolled a 6! Roll again.':names[turn]+' player turn. Roll the dice!');
+  persistGame(false);
+}
+function draw(){
+  board.replaceChildren();
+  for(let y=0;y<11;y++)for(let x=0;x<11;x++){
+    const cell=document.createElement('div');cell.className='cell';
+    const at=route.findIndex(p=>p[0]===x&&p[1]===y);
+    if(at>=0){
+      cell.style.background=safe.includes(at)?'#fff1c9':'#e9edf7';
+      cell.textContent='·';
+      for(let c=0;c<4;c++)tokens[c].forEach((v,j)=>{
+        if(v>=0&&v<52&&(starts[c]+v)%52===at){
+          const b=document.createElement('button');b.className='token '+colors[c];b.textContent=j+1;
+          b.type='button';b.setAttribute('aria-label',names[c]+' token '+(j+1));
+          b.addEventListener('click',()=>move(c,j));
+          if(c===turn&&rolled&&((v===-1&&dice===6)||(v>=0&&v<56-dice)))b.style.outline='4px solid #222';
+          cell.appendChild(b);
+        }
+      });
+    }else if((x<4&&y<4)||(x>6&&y<4)||(x<4&&y>6)||(x>6&&y>6)){
+      const c=x<4?(y<4?0:3):(y<4?1:2);
+      cell.className='cell home';cell.style.background=['#ffdfe1','#dff8e9','#fff4c9','#dceaff'][c];
+      cell.textContent=['🔴','🟢','🟡','🔵'][c]+' '+finished[c]+'/4';
+      const homeAt=[(x===1&&y===1),(x===9&&y===1),(x===9&&y===9),(x===1&&y===9)][c];
+      if(homeAt){
+        cell.textContent='';
+        for(let j=0;j<4;j++){
+          const b=document.createElement('button');b.className='token '+colors[c];b.textContent=j+1;b.type='button';
+          b.setAttribute('aria-label',names[c]+' home token '+(j+1));
+          b.addEventListener('click',()=>move(c,j));
+          if(c===turn&&rolled&&dice===6&&tokens[c][j]===-1)b.style.outline='4px solid #222';
+          cell.appendChild(b);
+        }
+      }
+    }
+    board.appendChild(cell);
+  }
+}
+async function resumeSaved(){
+  try{
+    const saved=await loadGameProgress('ludo');
+    if(!validSave(saved)){msg('No valid saved Ludo game was found.');return;}
+    applySave(saved);savedAvailable=true;resumeButton.disabled=false;
+    msg('Saved Ludo game resumed. '+names[turn]+' player is up.');
+    setSaveStatus('Loaded saved game from this device or your GameZone account.');
+  }catch(error){msg('Could not load saved game: '+error.message);}
+}
+document.getElementById('save').addEventListener('click',()=>persistGame(true));
+document.getElementById('resume').addEventListener('click',resumeSaved);
+document.getElementById('new').addEventListener('click',()=>{
+  if(confirm('Start a new Ludo game? This will replace your saved game.'))reset();
+});
+diceButton.addEventListener('click',roll);
+
+async function boot(){
+  draw();
+  try{
+    await authReady;
+    const saved=await loadGameProgress('ludo');
+    if(validSave(saved)){
+      applySave(saved);savedAvailable=true;resumeButton.disabled=false;
+      msg('Your saved game is ready. '+names[turn]+' player turn.');
+      setSaveStatus('Saved game restored. Progress is kept automatically.');
+      if(rolled&&movableTokens().length===0)setTimeout(next,700);
+    }else{
+      msg('Red player turn. Roll the dice!');
+      setSaveStatus('No saved game yet. Your moves will save automatically on this device.');
+    }
+  }catch(error){
+    console.error('Ludo save restore failed:',error);
+    msg('Red player turn. Roll the dice!');
+    setSaveStatus('Local play is ready. Save restore was unavailable.');
+  }
+}
+boot();
+</script>
+</body>
+</html>
