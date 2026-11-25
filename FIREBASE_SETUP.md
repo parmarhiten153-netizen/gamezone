@@ -59,11 +59,14 @@ These rules let a signed-in player read and write only the document at `users/{t
 - Favorites and recently played games.
 - Best scores for the original GameZone games **Neon Racer 3D** and **Bike Rush 3D**, plus the **Candy Match** mini-game.
 - **Level Devil** completed-level flags and death count.
-- Local data is merged with cloud data on first sign-in. After that, changes are written to the signed-in user's Firestore document and remote updates are reflected on the device.
+- **Ludo** full board snapshot: current player, dice value/rolled state, all 16 token positions, and each player's finished-token count. Ludo autosaves after rolls and moves, with manual **Save Game** and **Resume Saved** controls.
+- Ludo saves are stored in the signed-in player's `users/{uid}` document under `gameSaves.ludo`. The existing owner-only rule for `users/{uid}` also protects this field; no public database rule is needed.
+- Local guest saves are kept separately from per-account saves on the same browser, so one account's saved board is not shown to another account.
+- Local data is merged with cloud data on first sign-in for the profile features listed above. Game-specific saves use their own save/load adapter.
 
 ## What does not sync yet
 
-Ludo does not currently have a complete GameZone cloud save/load adapter. Candy Match's best score syncs, but its active board and current move state do not. Their internal game progress should not be described as cloud-synced. A game's own save/load code must explicitly read and write its progress through the account system. Third-party games on another website cannot automatically share their private save data with GameZone.
+Candy Match's best score syncs, but its active board and current move state do not. Ludo cloud saving requires the Firebase web config, Authentication, and Firestore rules above to be configured. A game's own save/load code must explicitly read and write its progress through the account system. Third-party games on another website cannot automatically share their private save data with GameZone.
 
 ## Safety notes
 
