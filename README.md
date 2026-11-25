@@ -34,5 +34,6 @@ The site is a static website and can be published with GitHub Pages from the rep
 - `login.html` provides Firebase email/password and Google sign-in.
 - `assets/firebase-config.js` contains the public Firebase web-app config placeholders. Add your own project values there.
 - `assets/gamezone-cloud.js` syncs favorites, recent games, Neon Racer 3D, Bike Rush 3D, and Candy Match best scores, plus Level Devil completed levels/death count, to each signed-in user's Firestore profile.
+- Ludo now autosaves the complete board state locally and can save/load it from the signed-in user's `gameSaves.ludo` Firestore field. The game has manual Save Game and Resume Saved controls too.
 - Publish the owner-only rules from `firestore.rules` before testing cloud sync.
 - Follow [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Until Firebase is configured, guest data remains local to the current browser.
