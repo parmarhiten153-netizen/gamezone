@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07111b">
+<title>Real Drive 3D | GameZone</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111b;color:#f4f7fb;font-family:Arial,Helvetica,sans-serif;touch-action:none}.top{position:absolute;z-index:5;left:0;right:0;top:0;height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(#06101bdc,transparent)}.brand{font-weight:1000;font-size:19px;letter-spacing:-.6px}.brand span{color:#53d9e8}.top a{color:#e1edf5;text-decoration:none;font-size:13px;font-weight:700}.game{position:absolute;inset:0}.game canvas{display:block;width:100%;height:100%}.hud{position:absolute;z-index:4;top:62px;left:14px;right:14px;display:flex;gap:8px;justify-content:space-between;pointer-events:none}.stat{min-width:76px;padding:8px 12px;border:1px solid #ffffff25;border-radius:12px;background:#071522a8;backdrop-filter:blur(8px);color:#9fb5c7;font-size:10px;letter-spacing:1px}.stat strong{display:block;margin-top:3px;color:#fff;font-size:19px;letter-spacing:0}.overlay{position:absolute;z-index:8;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;background:linear-gradient(125deg,#06111eeF,#0a1b2be8);text-align:center}.overlay.hide{display:none}.panel{width:min(480px,100%);padding:28px 24px;border:1px solid #ffffff20;border-radius:24px;background:#0c1c2cdd;box-shadow:0 25px 80px #0008}.eyebrow{color:#5de1eb;font-size:11px;font-weight:900;letter-spacing:2px}.panel h1{margin:12px 0;font-size:clamp(35px,8vw,58px);line-height:.98;letter-spacing:-2px}.panel p{color:#b4c6d5;line-height:1.55;font-size:14px}.btn{border:0;border-radius:13px;padding:15px 25px;background:linear-gradient(110deg,#16a6ba,#5be1d1);color:#05202a;font-weight:1000;font-size:15px;cursor:pointer}.hint{font-size:11px!important;color:#8fa8ba!important}.controls{position:absolute;z-index:6;left:0;right:0;bottom:max(16px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:end;padding:0 18px;pointer-events:none}.steer,.pedals{display:flex;gap:10px;pointer-events:auto}.ctrl{width:66px;height:66px;border:1px solid #ffffff38;border-radius:18px;background:#0b1b2bcc;color:#fff;font-size:25px;font-weight:900;backdrop-filter:blur(8px);touch-action:none;user-select:none;-webkit-user-select:none}.ctrl:active,.ctrl.down{background:#087f92}.pedals{flex-direction:column}.pedals .ctrl{width:76px;height:56px;font-size:13px;letter-spacing:1px}.gas{background:#087c67cc}.brake{background:#9b334dcc}.help{position:absolute;z-index:4;bottom:15px;left:50%;transform:translateX(-50%);color:#d5e4efb0;font-size:10px;white-space:nowrap;pointer-events:none}@media(min-width:800px){.ctrl{opacity:.78}.controls{padding:0 32px}.hud{left:28px;right:28px}.stat{min-width:100px}.help{bottom:20px}}@media(max-width:520px){.hud{top:60px}.stat{min-width:68px;padding:7px 9px}.stat strong{font-size:17px}.ctrl{width:62px;height:62px}.pedals .ctrl{width:70px;height:54px}.help{display:none}.top{padding:0 12px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">🎮 GAME<span>ZONE</span> <small style="font-size:11px;color:#9db4c5"> / REAL DRIVE</small></div><a href="../../index.html">← GAMEZONE</a></header>
+<div class="game" id="game"></div>
+<div class="hud"><div class="stat">SPEED<strong><span id="speed">0</span> <small style="font-size:10px">KM/H</small></strong></div><div class="stat">DISTANCE<strong id="distance">0.0 KM</strong></div><div class="stat">BEST<strong id="best">0.0 KM</strong></div></div>
+<div class="controls">
+ <div class="steer"><button class="ctrl" id="left" aria-label="Steer left">◀</button><button class="ctrl" id="right" aria-label="Steer right">▶</button></div>
+ <div class="pedals"><button class="ctrl brake" id="brake">BRAKE</button><button class="ctrl gas" id="gas">ACCEL</button></div>
+</div>
+<div class="help">WASD / ARROW KEYS · HOLD ACCEL TO DRIVE · BRAKE TO SLOW DOWN</div>
+<div class="overlay" id="start">
+ <div class="panel"><div class="eyebrow">GAMEZONE ORIGINAL · REAL-TIME 3D</div><h1>REAL DRIVE<br><span style="color:#58dbe5">HIGHWAY</span></h1><p>Take the wheel. Accelerate, brake and steer through highway traffic. Built with GameZone's own files and a mobile-friendly control layout.</p><button class="btn" id="startBtn">START ENGINE</button><p class="hint">Mobile: hold ACCEL and steer with ◀ ▶. Desktop: W A S D or arrow keys.</p></div>
+</div>
+<div class="overlay hide" id="crash">
+ <div class="panel"><div class="eyebrow">DRIVE ENDED</div><h1>CRASH!</h1><p>You drove <strong id="finalDistance">0.0 KM</strong></p><button class="btn" id="again">DRIVE AGAIN</button><p class="hint">Keep a safe distance from traffic and stay on the road.</p></div>
+</div>
+<script src="../../three.min.js"></script>
+<script>
+(()=>{'use strict';
+const host=document.getElementById('game'),startScreen=document.getElementById('start'),crashScreen=document.getElementById('crash');
+if(!window.THREE){startScreen.querySelector('p').textContent='Three.js could not load. Please refresh the page.';return;}
+const T=window.THREE;
+let renderer,scene,camera,car,clock=new T.Clock(),running=false,carX=0,carZ=0,speed=0,distance=0,best=Number(localStorage.getItem('gz_real_drive_best')||0),steer=0,traffic=[],roadside=[],roadMarks=[],lastTime=0;
+const keys={left:false,right:false,gas:false,brake:false};
+document.getElementById('best').textContent=best.toFixed(1)+' KM';
+try{renderer=new T.WebGLRenderer({antialias:innerWidth>700,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;host.appendChild(renderer.domElement);}catch(e){startScreen.querySelector('p').textContent='WebGL could not start in this browser. Try Chrome or Safari with hardware acceleration.';return;}
+scene=new T.Scene();scene.background=new T.Color(0x9fc5d9);scene.fog=new T.Fog(0x9fc5d9,100,440);
+camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,.1,700);camera.position.set(0,5.2,11);
+scene.add(new T.HemisphereLight(0xeaf7ff,0x52605a,2.15));
+const sun=new T.DirectionalLight(0xfff1d8,2.5);sun.position.set(-70,100,55);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-75;sun.shadow.camera.right=75;sun.shadow.camera.top=75;sun.shadow.camera.bottom=-75;scene.add(sun);
+const mat=(color,roughness=.65,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
+const asphalt=mat(0x30363a,.98),edgeMat=mat(0xe6e6d8,.8),lineMat=mat(0xf2f0df,.75),grassMat=mat(0x526f49,1),trunkMat=mat(0x6e4d35,1),leafMat=mat(0x3f7045,1);
+const ground=new T.Mesh(new T.PlaneGeometry(1200,1600),grassMat);ground.rotation.x=-Math.PI/2;ground.position.set(0,-.22,-500);ground.receiveShadow=true;scene.add(ground);
+const road=new T.Mesh(new T.PlaneGeometry(18,1600),asphalt);road.rotation.x=-Math.PI/2;road.position.set(0,-.1,-500);road.receiveShadow=true;scene.add(road);
+for(const x of [-9,9]){const e=new T.Mesh(new T.BoxGeometry(.22,.08,1600),edgeMat);e.position.set(x,-.045,-500);scene.add(e);}
+for(const x of [-3,3])for(let i=0;i<100;i++){const m=new T.Mesh(new T.BoxGeometry(.13,.025,5.5),lineMat);m.position.set(x,-.045,-i*15-5);scene.add(m);roadMarks.push(m);}
+function addTree(x,z){const g=new T.Group(),tr=new T.Mesh(new T.CylinderGeometry(.18,.27,1.7,8),trunkMat),crown=new T.Mesh(new T.SphereGeometry(1.25,10,8),leafMat);tr.position.y=.85;crown.position.y=2.35;crown.scale.set(1,1.25,.9);g.add(tr,crown);g.position.set(x,0,z);scene.add(g);roadside.push(g);}
+function addBuilding(x,z){const h=8+Math.random()*20,w=5+Math.random()*8,d=6+Math.random()*8;const g=new T.Group(),b=new T.Mesh(new T.BoxGeometry(w,h,d),mat([0x8d989d,0xb3a99a,0x777f83,0x9babb0][Math.floor(Math.random()*4)],.85));b.position.y=h/2;g.add(b);const win=mat(0x345263,.35,.25);for(let y=2;y<h-1;y+=2.4){for(let xx=-w/2+1;xx<w/2-0.5;xx+=1.8){const m=new T.Mesh(new T.BoxGeometry(.85,1.15,.035),win);m.position.set(xx,y,d/2+.02);g.add(m);}}g.position.set(x,0,z);scene.add(g);roadside.push(g);}
+for(let i=0;i<42;i++){const z=-i*34-25;addTree(-14-Math.random()*18,z);addTree(14+Math.random()*18,z-12);if(i%3===0){addBuilding(-32-Math.random()*12,z-15);addBuilding(32+Math.random()*12,z-28);}}
+function makeCar(color=0xd52e32,isPlayer=false){
+ const g=new T.Group(),bodyMat=mat(color,.28,.58),glass=mat(0x182c3a,.18,.35),rubber=mat(0x101216,.92),rim=mat(0xaeb9bd,.24,.85),chrome=mat(0xc4d0d3,.2,.8),lamp=new T.MeshStandardMaterial({color:0xfff1c9,emissive:0x8d7650,emissiveIntensity:.65}),tail=new T.MeshStandardMaterial({color:0xe21e25,emissive:0x8a0508,emissiveIntensity:.8});
+ // Lower sculpted body, hood, rear deck and cabin
+ const lower=new T.Mesh(new T.BoxGeometry(2.05,.62,4.35),bodyMat);lower.position.y=.78;g.add(lower);
+ const hood=new T.Mesh(new T.BoxGeometry(1.94,.22,1.38),bodyMat);hood.position.set(0,1.08,-1.36);g.add(hood);
+ const rear=new T.Mesh(new T.BoxGeometry(1.94,.25,1.05),bodyMat);rear.position.set(0,1.08,1.48);g.add(rear);
+ const cabinShape=new T.Shape();cabinShape.moveTo(-.91,0);cabinShape.lineTo(-.72,.78);cabinShape.quadraticCurveTo(-.65,.9,-.45,.9);cabinShape.lineTo(.55,.9);cabinShape.quadraticCurveTo(.76,.88,.85,.65);cabinShape.lineTo(.94,0);cabinShape.closePath();
+ const cabGeo=new T.ExtrudeGeometry(cabinShape,{depth:1.95,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.055,bevelThickness:.045});cabGeo.rotateY(Math.PI);cabGeo.translate(0,1.12,.98);const cab=new T.Mesh(cabGeo,bodyMat);g.add(cab);
+ const windshield=new T.Mesh(new T.BoxGeometry(1.55,.58,.045),glass);windshield.position.set(0,1.73,-.48);windshield.rotation.x=-.35;g.add(windshield);
+ const rearGlass=new T.Mesh(new T.BoxGeometry(1.48,.5,.04),glass);rearGlass.position.set(0,1.69,1.04);rearGlass.rotation.x=.42;g.add(rearGlass);
+ const sideGlass=mat(0x24414f,.2,.3);for(const s of [-1,1]){const win=new T.Mesh(new T.BoxGeometry(.035,.48,1.35),sideGlass);win.position.set(s*.99,1.72,.23);g.add(win);const mirror=new T.Mesh(new T.BoxGeometry(.22,.14,.27),bodyMat);mirror.position.set(s*1.12,1.48,-.5);g.add(mirror);}
+ // Bumpers, grille, lights
+ const bumper=new T.Mesh(new T.BoxGeometry(2.08,.22,.22),chrome);bumper.position.set(0,.54,-2.18);g.add(bumper);
+ const grille=new T.Mesh(new T.BoxGeometry(.72,.24,.045),mat(0x10171b,.45,.4));grille.position.set(0,.78,-2.2);g.add(grille);
+ for(const s of [-1,1]){const head=new T.Mesh(new T.BoxGeometry(.42,.18,.08),lamp);head.position.set(s*.68,.96,-2.2);g.add(head);const back=new T.Mesh(new T.BoxGeometry(.4,.19,.08),tail);back.position.set(s*.68,.94,2.19);g.add(back);}
+ // Wheels with rims and visible spokes
+ for(const x of [-1.03,1.03])for(const z of [-1.42,1.42]){const wheel=new T.Group();wheel.position.set(x,.57,z);const tire=new T.Mesh(new T.CylinderGeometry(.49,.49,.27,24),rubber);tire.rotation.z=Math.PI/2;wheel.add(tire);const hub=new T.Mesh(new T.CylinderGeometry(.27,.27,.29,20),rim);hub.rotation.z=Math.PI/2;wheel.add(hub);const center=new T.Mesh(new T.CylinderGeometry(.12,.12,.31,16),chrome);center.rotation.z=Math.PI/2;wheel.add(center);for(let j=0;j<8;j++){const spoke=new T.Mesh(new T.BoxGeometry(.035,.035,.43),chrome);spoke.position.y=Math.sin(j*Math.PI/4)*.19;spoke.position.z=Math.cos(j*Math.PI/4)*.19;spoke.rotation.x=j*Math.PI/4;wheel.add(spoke);}g.add(wheel);if(isPlayer)g.userData.wheels=(g.userData.wheels||[]).concat(wheel);}
+ const roof=new T.Mesh(new T.BoxGeometry(1.45,.12,1.65),bodyMat);roof.position.set(0,2.05,.25);g.add(roof);
+ if(isPlayer){const plate=new T.Mesh(new T.BoxGeometry(.65,.12,.035),mat(0xf3f3ed));plate.position.set(0,.8,-2.23);g.add(plate);}
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;
+}
+car=makeCar(0x176bd1,true);car.position.set(0,0,0);scene.add(car);
+function spawnTraffic(){const colors=[0xe2e5e7,0xc82f35,0x1d252b,0xe4a33b,0x376b9e,0x4f795b];const lane=[-6,-2,2,6][Math.floor(Math.random()*4)];const v=makeCar(colors[Math.floor(Math.random()*colors.length)]);const z=carZ-110-Math.random()*75;v.scale.setScalar(.93+Math.random()*.12);v.position.set(lane,0,z);scene.add(v);traffic.push({mesh:v,z,lane,passed:false,speed:18+Math.random()*22});}
+let spawnTimer=1.4;
+function setHold(id,key){const el=document.getElementById(id);const down=e=>{e.preventDefault();keys[key]=true;el.classList.add('down');try{el.setPointerCapture(e.pointerId);}catch(_){}};const up=e=>{e.preventDefault();keys[key]=false;el.classList.remove('down');};el.addEventListener('pointerdown',down);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);}
+setHold('left','left');setHold('right','right');setHold('gas','gas');setHold('brake','brake');
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup','arrowdown',' '].includes(k))e.preventDefault();if(k==='a'||k==='arrowleft')keys.left=true;if(k==='d'||k==='arrowright')keys.right=true;if(k==='w'||k==='arrowup')keys.gas=true;if(k==='s'||k==='arrowdown'||k===' ')keys.brake=true;});
+window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='a'||k==='arrowleft')keys.left=false;if(k==='d'||k==='arrowright')keys.right=false;if(k==='w'||k==='arrowup')keys.gas=false;if(k==='s'||k==='arrowdown'||k===' ')keys.brake=false;});
+function reset(){traffic.forEach(t=>scene.remove(t.mesh));traffic=[];carX=0;carZ=0;speed=0;distance=0;steer=0;spawnTimer=1.2;running=true;clock.getDelta();startScreen.classList.add('hide');crashScreen.classList.add('hide');}
+function finish(){running=false;const d=distance/1000;document.getElementById('finalDistance').textContent=d.toFixed(2)+' KM';if(d>best){best=d;localStorage.setItem('gz_real_drive_best',best.toFixed(2));document.getElementById('best').textContent=best.toFixed(1)+' KM';window.dispatchEvent(new Event('gamezone:data-changed'));}crashScreen.classList.remove('hide');}
+function update(dt){
+ if(keys.gas)speed=Math.min(145,speed+42*dt);else speed=Math.max(0,speed-9*dt);
+ if(keys.brake)speed=Math.max(0,speed-82*dt);
+ const steerInput=(keys.right?1:0)-(keys.left?1:0);steer+=(steerInput-steer)*Math.min(1,dt*6);
+ carX+=steer*(2.1+speed*.052)*dt;carX*=1- Math.min(.35,dt*.28);
+ carZ-=speed/3.6*dt;distance+=speed/3.6*dt;
+ car.position.x=carX;car.position.z=carZ;car.rotation.z=-steer*Math.min(.16,speed/500);car.rotation.y=-steer*.045;
+ (car.userData.wheels||[]).forEach(w=>w.rotation.x-=speed*dt*.035);
+ // Road markings and roadside objects recycle behind the player.
+ roadMarks.forEach(m=>{if(m.position.z>carZ+30)m.position.z-=1500;});
+ roadside.forEach(o=>{if(o.position.z>carZ+80)o.position.z-=1450;});
+ // Soft road-edge penalty
+ if(Math.abs(carX)>7.15)speed=Math.max(0,speed-38*dt);
+ spawnTimer-=dt;if(spawnTimer<=0){spawnTraffic();spawnTimer=Math.max(.85,2.1-speed/110)+Math.random()*.55;}
+ for(const t of traffic){t.z-=t.speed/3.6*dt;t.mesh.position.z=t.z;const gap=t.z-carZ;if(!t.passed&&gap<0){t.passed=true;distance+=7;}if(Math.abs(gap)<4.5&&Math.abs(carX-t.lane)<2.15){finish();return;}}
+ traffic=traffic.filter(t=>{if(t.z>carZ+28){scene.remove(t.mesh);return false;}return true;});
+ const targetCam=new T.Vector3(carX*.48,5.2,carZ+10.8);camera.position.lerp(targetCam,1-Math.pow(.001,dt));camera.lookAt(carX*.25,1.1,carZ-18);
+ document.getElementById('speed').textContent=Math.round(speed);
+ document.getElementById('distance').textContent=(distance/1000).toFixed(2)+' KM';
+}
+function render(){renderer.render(scene,camera);}
+function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.045);if(running)update(dt);render();}
+document.getElementById('startBtn').addEventListener('click',reset);document.getElementById('again').addEventListener('click',reset);
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));});
+reset();running=false;startScreen.classList.remove('hide');loop();
+})();
+</script>
+<script type="module" src="../../assets/gamezone-cloud.js"></script>
+</body>
+</html>
