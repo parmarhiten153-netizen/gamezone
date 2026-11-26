@@ -115,7 +115,7 @@ function reset(){
   persistGame(false);
 }
 function movableTokens(){
-  return tokens[turn].map((p,i)=>(p===-1&&dice===6)||(p>=0&&p<56-dice)?i:-1).filter(i=>i>=0);
+  return tokens[turn].map((p,i)=>(p===-1&&dice===6)||(p>=0&&p<=56-dice)?i:-1).filter(i=>i>=0);
 }
 function next(){
   rolled=false;dice=0;turn=(turn+1)%4;diceButton.textContent='🎲';draw();
@@ -140,7 +140,7 @@ function move(c,i){
   if(c!==turn||!rolled)return;
   const p=tokens[c][i];
   if(p===-1){if(dice!==6)return;tokens[c][i]=0;}
-  else{if(p>=56-dice)return;tokens[c][i]=p+dice;}
+  else{if(p>56-dice)return;tokens[c][i]=p+dice;}
   const np=tokens[c][i];
   if(np===56)finished[c]++;
   if(np<52){
