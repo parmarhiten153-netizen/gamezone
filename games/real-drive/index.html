@@ -40,9 +40,9 @@ scene.add(new T.HemisphereLight(0xeaf7ff,0x52605a,2.15));
 const sun=new T.DirectionalLight(0xfff1d8,2.5);sun.position.set(-70,100,55);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-75;sun.shadow.camera.right=75;sun.shadow.camera.top=75;sun.shadow.camera.bottom=-75;scene.add(sun);
 const mat=(color,roughness=.65,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
 const asphalt=mat(0x30363a,.98),edgeMat=mat(0xe6e6d8,.8),lineMat=mat(0xf2f0df,.75),grassMat=mat(0x526f49,1),trunkMat=mat(0x6e4d35,1),leafMat=mat(0x3f7045,1);
-const ground=new T.Mesh(new T.PlaneGeometry(1200,1600),grassMat);ground.rotation.x=-Math.PI/2;ground.position.set(0,-.22,-500);ground.receiveShadow=true;scene.add(ground);
-const road=new T.Mesh(new T.PlaneGeometry(18,1600),asphalt);road.rotation.x=-Math.PI/2;road.position.set(0,-.1,-500);road.receiveShadow=true;scene.add(road);
-for(const x of [-9,9]){const e=new T.Mesh(new T.BoxGeometry(.22,.08,1600),edgeMat);e.position.set(x,-.045,-500);scene.add(e);}
+const ground=new T.Mesh(new T.PlaneGeometry(1200,12000),grassMat);ground.rotation.x=-Math.PI/2;ground.position.set(0,-.22,-5900);ground.receiveShadow=true;scene.add(ground);
+const road=new T.Mesh(new T.PlaneGeometry(18,12000),asphalt);road.rotation.x=-Math.PI/2;road.position.set(0,-.1,-5900);road.receiveShadow=true;scene.add(road);
+for(const x of [-9,9]){const e=new T.Mesh(new T.BoxGeometry(.22,.08,12000),edgeMat);e.position.set(x,-.045,-5900);scene.add(e);}
 for(const x of [-3,3])for(let i=0;i<100;i++){const m=new T.Mesh(new T.BoxGeometry(.13,.025,5.5),lineMat);m.position.set(x,-.045,-i*15-5);scene.add(m);roadMarks.push(m);}
 function addTree(x,z){const g=new T.Group(),tr=new T.Mesh(new T.CylinderGeometry(.18,.27,1.7,8),trunkMat),crown=new T.Mesh(new T.SphereGeometry(1.25,10,8),leafMat);tr.position.y=.85;crown.position.y=2.35;crown.scale.set(1,1.25,.9);g.add(tr,crown);g.position.set(x,0,z);scene.add(g);roadside.push(g);}
 function addBuilding(x,z){const h=8+Math.random()*20,w=5+Math.random()*8,d=6+Math.random()*8;const g=new T.Group(),b=new T.Mesh(new T.BoxGeometry(w,h,d),mat([0x8d989d,0xb3a99a,0x777f83,0x9babb0][Math.floor(Math.random()*4)],.85));b.position.y=h/2;g.add(b);const win=mat(0x345263,.35,.25);for(let y=2;y<h-1;y+=2.4){for(let xx=-w/2+1;xx<w/2-0.5;xx+=1.8){const m=new T.Mesh(new T.BoxGeometry(.85,1.15,.035),win);m.position.set(xx,y,d/2+.02);g.add(m);}}g.position.set(x,0,z);scene.add(g);roadside.push(g);}
@@ -91,7 +91,7 @@ function update(dt){
  // Soft road-edge penalty
  if(Math.abs(carX)>7.15)speed=Math.max(0,speed-38*dt);
  spawnTimer-=dt;if(spawnTimer<=0){spawnTraffic();spawnTimer=Math.max(.85,2.1-speed/110)+Math.random()*.55;}
- for(const t of traffic){t.z-=t.speed/3.6*dt;t.mesh.position.z=t.z;const gap=t.z-carZ;if(!t.passed&&gap<0){t.passed=true;distance+=7;}if(Math.abs(gap)<4.5&&Math.abs(carX-t.lane)<2.15){finish();return;}}
+ for(const t of traffic){t.z-=t.speed/3.6*dt;t.mesh.position.z=t.z;const gap=t.z-carZ;if(!t.passed&&gap<0){t.passed=true;}if(Math.abs(gap)<4.5&&Math.abs(carX-t.lane)<2.15){finish();return;}}
  traffic=traffic.filter(t=>{if(t.z>carZ+28){scene.remove(t.mesh);return false;}return true;});
  const targetCam=new T.Vector3(carX*.48,5.2,carZ+10.8);camera.position.lerp(targetCam,1-Math.pow(.001,dt));camera.lookAt(carX*.25,1.1,carZ-18);
  document.getElementById('speed').textContent=Math.round(speed);
