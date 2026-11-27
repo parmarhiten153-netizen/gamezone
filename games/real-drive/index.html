@@ -33,6 +33,7 @@ const T=window.THREE;
 let renderer,scene,camera,car,clock=new T.Clock(),running=false,carX=0,carZ=0,speed=0,distance=0,best=Number(localStorage.getItem('gz_real_drive_best')||0),steer=0,traffic=[],roadside=[],roadMarks=[],lastTime=0;
 const keys={left:false,right:false,gas:false,brake:false};
 document.getElementById('best').textContent=best.toFixed(1)+' KM';
+window.addEventListener('gamezone:cloud-updated',()=>{const synced=Math.max(0,Number(localStorage.getItem('gz_real_drive_best')||0));if(synced>best){best=synced;document.getElementById('best').textContent=best.toFixed(1)+' KM';}});
 try{renderer=new T.WebGLRenderer({antialias:innerWidth>700,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;host.appendChild(renderer.domElement);}catch(e){startScreen.querySelector('p').textContent='WebGL could not start in this browser. Try Chrome or Safari with hardware acceleration.';return;}
 scene=new T.Scene();scene.background=new T.Color(0x9fc5d9);scene.fog=new T.Fog(0x9fc5d9,100,440);
 camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,.1,700);camera.position.set(0,5.2,11);
