@@ -61,8 +61,8 @@ if(fav.length)fav.forEach(id=>addLink(favBox,games[id]));else favBox.textContent
 const recentBox=document.getElementById("recentNames");recentBox.replaceChildren();
 if(recent.length)recent.forEach(item=>addLink(recentBox,games[item.id]));else recentBox.textContent="No games played yet.";
 const scoreBox=document.getElementById("bestScores");scoreBox.replaceChildren();
-const scores=[["Neon Racer 3D",Number(localStorage.getItem("gz_neon_racer_best")||0)],["Bike Rush 3D",Number(localStorage.getItem("gz_bike_rush_best")||0)],["Real Drive 3D",Number(localStorage.getItem("gz_real_drive_best")||0).toFixed(2)+" KM"],["Candy Match",Number(localStorage.getItem("gz_candy_match_best")||0)]].filter(item=>Number.isFinite(item[1])&&item[1]>0);const completed=Object.values(readObject("fd_done")).filter(Boolean).length;const deaths=Number(localStorage.getItem("fd_deaths")||0);if(completed||deaths)scores.push(["Level Devil",completed+" levels · "+deaths+" deaths"]);
-if(scores.length){scores.forEach(([name,value])=>{const pill=document.createElement("span");pill.className="score-pill";pill.textContent=name+": "+value;scoreBox.appendChild(pill);});}else{scoreBox.textContent="No scores saved yet.";}
+const scores=[["Neon Racer 3D",Number(localStorage.getItem("gz_neon_racer_best")||0)],["Bike Rush 3D",Number(localStorage.getItem("gz_bike_rush_best")||0)],["Real Drive 3D",Number(localStorage.getItem("gz_real_drive_best")||0)],["Candy Match",Number(localStorage.getItem("gz_candy_match_best")||0)]].filter(item=>Number.isFinite(item[1])&&item[1]>0);const completed=Object.values(readObject("fd_done")).filter(Boolean).length;const deaths=Number(localStorage.getItem("fd_deaths")||0);if(completed||deaths)scores.push(["Level Devil",completed+" levels · "+deaths+" deaths"]);
+if(scores.length){scores.forEach(([name,value])=>{const pill=document.createElement("span");pill.className="score-pill";pill.textContent=name+": "+(name==="Real Drive 3D"?Number(value).toFixed(2)+" KM":value);scoreBox.appendChild(pill);});}else{scoreBox.textContent="No scores saved yet.";}
 }
 renderLocal();
 window.addEventListener("gamezone:cloud-updated",renderLocal);
