@@ -8,11 +8,9 @@ A small browser-game website hosted with GitHub Pages.
 | --- | --- | --- |
 | Neon Racer 3D | Original GameZone 3D WebGL racing game | `games/neon-racer/index.html` |
 | Bike Rush 3D | Original GameZone 3D motorcycle traffic game | `games/bike-rush/index.html` |
-| Candy Match | GameZone puzzle mini-game | `candy-crush.html` |
-| Ludo | Local four-player board game | `ludo.html` |
-| Level Devil | Canvas platformer | `level-devil.html` |
+| Real Drive 3D | Original GameZone 3D highway traffic driving game with touch controls | `games/real-drive/index.html` |
 
-All five game cards on the homepage open pages on the GameZone site. The homepage does not send players to Poki, Gamebiz, or another game portal.
+The three games listed above are the active homepage catalog. Older 2D mini-game files remain in the repository but are not listed on the homepage. All active game cards open pages hosted on GameZone itself, not on Poki, Gamebiz, or another game portal.
 
 ## Important note about Play Store titles
 
@@ -22,7 +20,7 @@ Neon Racer 3D and Bike Rush 3D are original GameZone games. They are not Play St
 
 ## Local player data
 
-Guest favorites, recent games, and supported game progress are stored in browser local storage. After Firebase is configured, favorites, recent games, supported scores, Level Devil progress, and the Ludo board save can sync to the signed-in player's Firestore profile. Firebase setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Each game still needs its own save/load integration.
+Guest favorites, recent games, and supported game progress are stored in browser local storage. After Firebase is configured, favorites, recent games, supported scores including Real Drive 3D best distance, legacy Level Devil progress, and the Ludo board save can sync to the signed-in player's Firestore profile. Firebase setup instructions are in [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Each game still needs its own save/load integration.
 
 ## Deploy
 
@@ -33,7 +31,7 @@ The site is a static website and can be published with GitHub Pages from the rep
 
 - `login.html` provides Firebase email/password and Google sign-in.
 - `assets/firebase-config.js` contains the public Firebase web-app config placeholders. Add your own project values there.
-- `assets/gamezone-cloud.js` syncs favorites, recent games, Neon Racer 3D, Bike Rush 3D, and Candy Match best scores, plus Level Devil completed levels/death count, to each signed-in user's Firestore profile.
+- `assets/gamezone-cloud.js` syncs favorites, recent games, Neon Racer 3D and Bike Rush 3D best scores, Real Drive 3D best distance, and legacy Candy Match/Level Devil progress, to each signed-in user's Firestore profile.
 - Ludo now autosaves the complete board state locally and can save/load it from the signed-in user's `gameSaves.ludo` Firestore field. The game has manual Save Game and Resume Saved controls too.
 - Publish the owner-only rules from `firestore.rules` before testing cloud sync.
 - Follow [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Until Firebase is configured, guest data remains local to the current browser.
