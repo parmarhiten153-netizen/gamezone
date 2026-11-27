@@ -57,7 +57,8 @@ These rules let a signed-in player read and write only the document at `users/{t
 - Google sign-in.
 - Per-user profile document at `users/{uid}`.
 - Favorites and recently played games.
-- Best scores for the original GameZone games **Neon Racer 3D** and **Bike Rush 3D**, plus the **Candy Match** mini-game.
+- Best scores for the original GameZone games **Neon Racer 3D** and **Bike Rush 3D**.
+- Best driven distance for **Real Drive 3D**, saved in kilometres with two decimal places.
 - **Level Devil** completed-level flags and death count.
 - **Ludo** full board snapshot: current player, dice value/rolled state, all 16 token positions, and each player's finished-token count. Ludo autosaves after rolls and moves, with manual **Save Game** and **Resume Saved** controls.
 - Ludo saves are stored in the signed-in player's `users/{uid}` document under `gameSaves.ludo`. The existing owner-only rule for `users/{uid}` also protects this field; no public database rule is needed.
