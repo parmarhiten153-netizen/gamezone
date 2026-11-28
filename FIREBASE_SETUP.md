@@ -8,7 +8,7 @@ This connects real accounts and cloud sync for the GameZone profile. The site re
 2. Select **Add project** and name it `GameZone`.
 3. After it is created, open **Project overview** and add a **Web app**.
 4. Register the app as `GameZone Web`.
-5. Copy the Firebase web configuration object.
+5. Copy the Firebase web configuration object.\n\nThe project ID shown in the existing GameZone Firebase Console is `gamezone-5389b`. The repository config already has this project ID and its default Firebase auth domain prefilled. You still need to copy the exact `apiKey` and `appId` from the registered web app.
 
 ## 2. Add the web configuration
 
