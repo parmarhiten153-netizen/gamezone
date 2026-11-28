@@ -3,8 +3,8 @@
 // Replace the placeholders with the config from Firebase Console.
 export const firebaseConfig = {
   apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
+  authDomain: "gamezone-5389b.firebaseapp.com",
+  projectId: "gamezone-5389b",
   appId: "YOUR_FIREBASE_APP_ID"
 };
 
